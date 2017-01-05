@@ -56,5 +56,7 @@ Fang L, Hu J, Wang D, Wang K. [Evaluation on Efficient Detection of Structural V
 
 NextSV is freely available for academic use. It is provided without warranty of any kind, including but not limited to the warranties of merchantability, fitness for a particular purpose and non-infringement. No liability for the software usage is assumed.
 
-For commercial use please contact Grandomics Biosciences (support@grandomics.com) for licensing options.
+For commercial use please contact Grandomics Biosciences (support@grandomics.com) for licensing options. 
+
+Redistribution is allowed. Modification is allowed. Redistribution of modified version is not allowed, but users can submit a push request to github, and after reviewing the modification, we may accept it in the master branch.
 
