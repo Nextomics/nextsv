@@ -75,7 +75,18 @@ echo "
 export SWEETPATH=$NEXTSV_ROOT/PBSuite_15.8.24
 export PYTHONPATH=\$PYTHONPATH:\$SWEETPATH
 export PATH=\$PATH:\$SWEETPATH/bin
-" > source.sh
+" > $NEXTSV_ROOT/setup-env.sh
+cd $NEXTSV_ROOT
+
+
+echo "#### installation of blasr ####"
+git clone https://github.com/PacificBiosciences/pitchfork.git
+cd pitchfork
+echo PREFIX=$NEXTSV_ROOT/blasr > settings.mk
+make init
+make blasr
+mv $NEXTSV_ROOT/blasr/bin/blasr $NEXTSV_ROOT/bin
+echo "export LD_LIBRARY_PATH=$NEXTSV_ROOT/blasr/lib:\$LD_LIBRARY_PATH" >> $NEXTSV_ROOT/setup-env.sh
 
 echo "
 ########################################################################
@@ -85,10 +96,10 @@ Please add the following environmental variables to your ~/.bashrc file:
 export SWEETPATH=$NEXTSV_ROOT/PBSuite_15.8.24
 export PYTHONPATH=\$PYTHONPATH:\$SWEETPATH
 export PATH=\$PATH:\$SWEETPATH/bin
+export LD_LIBRARY_PATH=$NEXTSV_ROOT/blasr/lib:\$LD_LIBRARY_PATH
 
 ########################################################################
 
 "
-echo "Installation finished\n"
 
-cd $NEXTSV_ROOT
+echo "Installation finished"
