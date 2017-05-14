@@ -77,14 +77,18 @@ export PYTHONPATH=\$PYTHONPATH:\$SWEETPATH
 export PATH=\$PATH:\$SWEETPATH/bin
 " > source.sh
 
-echo "\n########################################################################\n"
-echo "Please add the following environmental variables to your ~/.bashrc file:"
 echo "
+########################################################################
+
+Please add the following environmental variables to your ~/.bashrc file:
+
 export SWEETPATH=$NEXTSV_ROOT/PBSuite_15.8.24
 export PYTHONPATH=\$PYTHONPATH:\$SWEETPATH
-export PATH=\$PATH:\$SWEETPATH/bin"
+export PATH=\$PATH:\$SWEETPATH/bin
 
-echo "\n########################################################################\n"
-echo "Installation complete\n"
+########################################################################
+
+"
+echo "Installation finished\n"
 
 cd $NEXTSV_ROOT
