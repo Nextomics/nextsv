@@ -6,7 +6,7 @@ NextSV is an computational pipeline that allows structural variant (SV) calling 
 
 * Suitable for identifying structural variants from Mendelian diseases.
 
-* Easy downloading and installation.
+* Automatic installation of all aligners and SV callers.
 
 * Fast and easy customization
 
@@ -32,6 +32,9 @@ NextSV is an computational pipeline that allows structural variant (SV) calling 
    ```
    cd nextsv/
    sh install.sh
+   cp ~/.bashrc  ~/.bashrc.bak
+   cat setup-env.sh >> ~/.bashrc
+
    ```
 
 ## Usage
