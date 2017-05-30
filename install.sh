@@ -86,6 +86,7 @@ echo PREFIX=$NEXTSV_ROOT/blasr > settings.mk
 make init
 make blasr
 mv $NEXTSV_ROOT/blasr/bin/blasr $NEXTSV_ROOT/bin
+mv $NEXTSV_ROOT/blasr/bin/sawriter $NEXTSV_ROOT/bin
 echo "export LD_LIBRARY_PATH=$NEXTSV_ROOT/blasr/lib:\$LD_LIBRARY_PATH" >> $NEXTSV_ROOT/setup-env.sh
 
 echo "
