@@ -14,13 +14,16 @@ NextSV is an computational pipeline that allows structural variant (SV) calling 
 
 ## Supported aligners
 
-   BLASR, BWA-MEM
+   BLASR, BWA-MEM, NGMLR
 
 ## Supported SV callers
 
    PBHoney, Sniffles
 
 ## Installation
+
+   Prerequisites:
+   zlib-dev, cmake, gcc/g++(>=4.8.2)
 
    Download NextSV: 
 
