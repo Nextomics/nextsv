@@ -311,7 +311,7 @@ sub run_sniffles_ngmlr{
 	print OUT2 "#!/bin/bash\n\n";
 	print OUT2 "$arg{samtools} merge $merge_bam \\\n";
 	for ($i = 0; $i < $n_bam; $i++) {
-		print OUT2  "        $bwamem_bam[$i]\\\n";
+		print OUT2  "        $ngmlr_bam[$i]\\\n";
 	}
 	print OUT2 "\n\n";
 
