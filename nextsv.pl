@@ -235,14 +235,14 @@ sub run_sniffles_bwa{
 
 		open (OUT1, "> $sh_dir/$out1") or die $!;
 		print OUT1 "#!/bin/bash\n\n";
-		print OUT "echo \"program started at:\"";
-		print OUT "date\n\n";
+		print OUT1 "echo \"program started at:\"";
+		print OUT1 "date\n\n";
 		print OUT1 "$arg{bwa} mem -x pacbio -t $arg{n_thread} -M $arg{ref_bwa} $line  > $bwa_sam\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $bwa_sort_bam $bwa_sam\n";
 		print OUT1 "$arg{samtools} index $bwa_sort_bam\n";
 		#print OUT1 "rm $bwa_sam\n\n";
-		print OUT "echo \"program finished at:\"";
-		print OUT "date\n\n";
+		print OUT1 "echo \"program finished at:\"";
+		print OUT1 "date\n\n";
 		close OUT1;
 		$bwamem_bam[$i] = $bwa_sort_bam;
 		$i++;
@@ -260,8 +260,8 @@ sub run_sniffles_bwa{
 
 	open (OUT2, "> $merge_sh");
 	print OUT2 "#!/bin/bash\n\n";
-	print OUT "echo \"program started at:\"";
-	print OUT "date\n\n";
+	print OUT2 "echo \"program started at:\"";
+	print OUT2 "date\n\n";
 	print OUT2 "$arg{samtools} merge $merge_bam \\\n";
 	for ($i = 0; $i < $n_bam; $i++) {
 		print OUT2  "        $bwamem_bam[$i]\\\n";
@@ -271,8 +271,8 @@ sub run_sniffles_bwa{
 	print OUT2 "$arg{samtools} index $merge_bam\n";
 	print OUT2 "$arg{sniffles} -m $merge_bam --vcf $vcf --min_support $arg{min_support} --max_distance $arg{max_distance} --threads $arg{n_thread}\n";
 	print OUT2 "perl $arg{format_sniffles_vcf} $vcf\n";
-	print OUT "echo \"program finished at:\"";
-	print OUT "date\n\n";
+	print OUT2 "echo \"program finished at:\"";
+	print OUT2 "date\n\n";
 	close OUT2;
 }
 
@@ -312,13 +312,13 @@ sub run_sniffles_ngmlr{
 
 		open (OUT1, "> $sh_dir/$out1") or die $!;
 		print OUT1 "#!/bin/bash\n\n";
-		print OUT "echo \"program started at:\"";
-		print OUT "date\n\n";
+		print OUT1 "echo \"program started at:\"";
+		print OUT1 "date\n\n";
 		print OUT1 "$arg{ngmlr}  -t $arg{n_thread} -r $arg{ref_bwa} -q $line -o $ngmlr_sam\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $ngmlr_sort_bam $ngmlr_sam\n";
 		print OUT1 "$arg{samtools} index $ngmlr_sort_bam\n";
-		print OUT "echo \"program finished at:\"";
-		print OUT "date\n\n";
+		print OUT1 "echo \"program finished at:\"";
+		print OUT1 "date\n\n";
 		close OUT1;
 		$ngmlr_bam[$i] = $ngmlr_sort_bam;
 		$i++;
@@ -336,8 +336,8 @@ sub run_sniffles_ngmlr{
 
 	open (OUT2, "> $merge_sh");
 	print OUT2 "#!/bin/bash\n\n";
-	print OUT "echo \"program started at:\"";
-	print OUT "date\n\n";
+	print OUT2 "echo \"program started at:\"";
+	print OUT2 "date\n\n";
 	print OUT2 "$arg{samtools} merge $merge_bam \\\n";
 	for ($i = 0; $i < $n_bam; $i++) {
 		print OUT2  "        $ngmlr_bam[$i]\\\n";
@@ -347,7 +347,7 @@ sub run_sniffles_ngmlr{
 	print OUT2 "$arg{samtools} index $merge_bam\n";
 	print OUT2 "$arg{sniffles} -m $merge_bam --vcf $vcf --min_support $arg{min_support} --max_distance $arg{max_distance} --threads $arg{n_thread}\n";
 	print OUT2 "perl $arg{format_sniffles_vcf} $vcf\n";
-	print OUT "echo \"program finished at:\"";
-	print OUT "date\n\n";
+	print OUT2 "echo \"program finished at:\"";
+	print OUT2 "date\n\n";
 	close OUT2;
 }
