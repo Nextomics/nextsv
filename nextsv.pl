@@ -119,7 +119,7 @@ sub run_pbhoney{
 		print OUT "#!/bin/bash\n\n";
 
 		print OUT "\n########## blasr alignment ##########\n";
-		print OUT "$arg{blasr} $line $arg{ref_blasr} --sa $arg{ref_sa_blasr} --nproc $arg{n_thread} --bestn 1 --bam --clipping subread --out $blasr_bam\n\n";
+		print OUT "$arg{blasr} $line $arg{ref_blasr} -sa $arg{ref_sa_blasr} -nproc $arg{n_thread} -bestn 1 -bam -clipping subread -out $blasr_bam\n\n";
 
 		print OUT "\n########## tail realignment ##########\n";
 		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_bam $blasr_bam $arg{ref_blasr} \n\n";
