@@ -39,7 +39,7 @@ $arg{blasr}                 = "$nextsv_dir/bin/blasr";
 $arg{bwa}                   = "$nextsv_dir/bin/bwa";
 $arg{ngmlr}                 = "$nextsv_dir/bin/ngmlr";
 
-$arg{honey}                 = "$nextsv_dir/PBSuite_15.8.24/bin/Honey.py";
+$arg{honey}                 = "$nextsv_dir/aligners_and_callers/PBSuite_15.8.24/bin/Honey.py";
 $arg{sniffles}              = "$nextsv_dir/bin/sniffles";
 
 $arg{bamstat}               = "$nextsv_dir/bin/bamstat";
