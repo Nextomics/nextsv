@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use Cwd 'abs_path';
+use File::Basename;
 
 my $usage  = "
 Program:  NextSV (Automated SV detection for long-read sequencing)
@@ -13,6 +14,7 @@ Contact:  Li Fang (fangli\@grandomics.com)\n\n";
 die $usage if (@ARGV < 1);
 
 my $cfg = shift (@ARGV);
+my $nextsv_dir = abs_path(dirname($0));
 
 my %arg;
 open (CFG, $cfg) or die $!;
@@ -33,14 +35,20 @@ while (my $line = <CFG>)
 }
 close CFG;
 
-$arg{bamstat} = abs_path("./bin/bamstat");
-$arg{samtools} = abs_path("./bin/samtools1.3");
-$arg{merge2sv} = abs_path("./bin/merge2sv.pl");
-$arg{format_pbhoney_tails} = abs_path("./bin/format_pbhoney_tails.pl");
-$arg{format_sniffles_vcf} = abs_path("./bin/format_sniffles_vcf.pl");
-$arg{format_pbhoney_spots} = abs_path("./bin/format_pbhoney_spots.pl");
+$arg{blasr}                 = "$nextsv_dir/bin/blasr";
+$arg{bwa}                   = "$nextsv_dir/bin/bwa";
+$arg{ngmlr}                 = "$nextsv_dir/bin/ngmlr";
 
-print "$arg{bamstat}\n";
+$arg{honey}                 = "$nextsv_dir/PBSuite_15.8.24/bin/Honey.py";
+$arg{sniffles}              = "$nextsv_dir/bin/sniffles";
+
+$arg{bamstat}               = "$nextsv_dir/bin/bamstat";
+$arg{samtools}              = "$nextsv_dir/bin/samtools1.3";
+$arg{merge2sv}              = "$nextsv_dir/bin/merge2sv.pl";
+$arg{format_pbhoney_tails}  = "$nextsv_dir/bin/format_pbhoney_tails.pl";
+$arg{format_sniffles_vcf}   = "$nextsv_dir/bin/format_sniffles_vcf.pl";
+$arg{format_pbhoney_spots}  = "$nextsv_dir/bin/format_pbhoney_spots.pl";
+
 
 if ($arg{enable_PBHoney_Spots} == 1 or $arg{enable_PBHoney_Tails} == 1){
 	&run_pbhoney;	
@@ -103,9 +111,7 @@ sub run_pbhoney{
 		my $fq = $a[-1];
 		my $out = "$fq.align.sh";
 
-		my $blasr_sam      = "$blasr_bam_dir/$fq.blasr.sam";
 		my $blasr_bam      = "$blasr_bam_dir/$fq.blasr.bam";
-		my $tails_sam      = "$tails_bam_dir/$fq.tails.sam";
 		my $tails_bam      = "$tails_bam_dir/$fq.tails.bam";
 		my $tails_sort_bam = "$tails_bam_dir/$fq.tails.sort.bam";
 
@@ -113,23 +119,19 @@ sub run_pbhoney{
 		print OUT "#!/bin/bash\n\n";
 
 		print OUT "\n########## blasr alignment ##########\n";
-		print OUT "$arg{blasr} $line $arg{ref_blasr} -sa $arg{ref_sa_blasr} -nproc $arg{n_thread} -bestn 1 -sam -clipping subread -out $blasr_sam\n\n";
+		print OUT "$arg{blasr} $line $arg{ref_blasr} --sa $arg{ref_sa_blasr} --nproc $arg{n_thread} --bestn 1 --bam --clipping subread --out $blasr_bam\n\n";
 
 		print OUT "\n########## tail realignment ##########\n";
-		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_sam $blasr_sam $arg{ref_blasr} \n\n";
+		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_bam $blasr_bam $arg{ref_blasr} \n\n";
 
 		print OUT "\n########## sam to bam ##########\n";
-		print OUT "$arg{samtools} view -@ $arg{n_thread} -bS $blasr_sam > $blasr_bam\n\n";
-		print OUT "$arg{samtools} view -@ $arg{n_thread} -bS $tails_sam > $tails_bam\n\n";
 		print OUT "sleep 1s\n\n";
-		print OUT "rm $blasr_sam\n";
-		print OUT "rm $tails_sam\n\n";
 
 		print OUT "\n########## sort bam files ##########\n";
 		print OUT "$arg{samtools} sort -@ $arg{n_thread} -o $tails_sort_bam $tails_bam\n\n";
 		print OUT "$arg{samtools} index $tails_sort_bam\n";
 		print OUT "sleep 1s\n\n";
-		print OUT "rm $tails_bam\n\n";
+		#print OUT "rm $tails_bam\n\n";
 		close OUT;
 		$split_bam[$i] = "$tails_sort_bam";
 		$i++;
@@ -220,7 +222,7 @@ sub run_sniffles{
 		print OUT1 "$arg{bwa} mem -x pacbio -t $arg{n_thread} -M $arg{ref_bwa} $line  > $bwa_sam\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $bwa_sort_bam $bwa_sam\n";
 		print OUT1 "$arg{samtools} index $bwa_sort_bam\n";
-		print OUT1 "rm $bwa_sam\n\n";
+		#print OUT1 "rm $bwa_sam\n\n";
 		close OUT1;
 		$bwamem_bam[$i] = $bwa_sort_bam;
 		$i++;
