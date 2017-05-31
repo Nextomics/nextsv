@@ -3,7 +3,6 @@
 NEXTSV_ROOT=$PWD
 
 mkdir -p bin
-mkdir -p src
 
 echo "#### installation of samtools-1.3 and htslib ####"
 cd $NEXTSV_ROOT/aligners_and_callers
