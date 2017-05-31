@@ -148,7 +148,7 @@ sub run_pbhoney{
 		close OUT;
 		$split_bam[$i] = "$tails_sort_bam";
 		$i++;
-		print QSUB "qsub -cwd -q all.q -S /bin/bash -pe smp $arg{n_thread}  $out\n";
+		print QSUB "qsub -cwd -q all.q -S /bin/bash -pe smp $arg{n_thread}  $out && sleep 1s\n";
 	}
 	my $n_bam = $i;
 	close QSUB;
@@ -247,7 +247,7 @@ sub run_sniffles_bwa{
 		$bwamem_bam[$i] = $bwa_sort_bam;
 		$i++;
 
-		print QSUB "qsub -cwd -S /bin/bash -q all.q -pe smp $arg{n_thread}  $out1\n";
+		print QSUB "qsub -cwd -S /bin/bash -q all.q -pe smp $arg{n_thread}  $out1 && sleep 1s\n";
 	}
 	my $n_bam = $i;
 	close IN;
@@ -323,7 +323,7 @@ sub run_sniffles_ngmlr{
 		$ngmlr_bam[$i] = $ngmlr_sort_bam;
 		$i++;
 
-		print QSUB "qsub -cwd -S /bin/bash -q all.q -pe smp $arg{n_thread}  $out1\n";
+		print QSUB "qsub -cwd -S /bin/bash -q all.q -pe smp $arg{n_thread}  $out1 && sleep 1s\n";
 	}
 	my $n_bam = $i;
 	close IN;
