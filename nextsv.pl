@@ -51,11 +51,14 @@ $arg{format_pbhoney_spots}  = "$nextsv_dir/bin/format_pbhoney_spots.pl";
 
 
 if ($arg{enable_PBHoney_Spots} == 1 or $arg{enable_PBHoney_Tails} == 1){
+	print "Generating scripts for PBHoney...\n";
 	&run_pbhoney;	
 }
 
 if ($arg{enable_Sniffles} == 1){
-	&run_sniffles;
+	print "Generating scripts for Sniffles...\n";
+	&run_sniffles_bwa;
+	&run_sniffles_ngmlr;
 }
 
 if ($arg{enable_PBHoney_Spots} and $arg{enable_Sniffles}){
@@ -84,7 +87,6 @@ sub rtrim {
 };
 
 sub run_pbhoney{
-	print "Generating scripts for PBHoney...\n";
 
 	my $blasr_bam_dir = "$arg{out_dir}/pbhoney/1_blasr_bam"; 
 	my $tails_bam_dir = "$arg{out_dir}/pbhoney/2_tails_bam";   
@@ -182,14 +184,13 @@ sub run_pbhoney{
 
 }
 
-sub run_sniffles{
+sub run_sniffles_bwa{
 
-	print "Generating scripts for Sniffles...\n";
 
-	my $raw_bam_dir   = "$arg{out_dir}/sniffles/1_bwa_bam";
-	my $merge_bam_dir = "$arg{out_dir}/sniffles/2_merge_bam";
-	my $vcf_dir       = "$arg{out_dir}/sniffles/3_vcf";
-	my $sh_dir        = "$arg{out_dir}/sniffles/sh";
+	my $raw_bam_dir   = "$arg{out_dir}/sniffles_bwa/1_bwa_bam";
+	my $merge_bam_dir = "$arg{out_dir}/sniffles_bwa/2_merge_bam";
+	my $vcf_dir       = "$arg{out_dir}/sniffles_bwa/3_vcf";
+	my $sh_dir        = "$arg{out_dir}/sniffles_bwa/sh";
 	my $qsub          = "$sh_dir/qsub.sh";
 
 	`mkdir -p $raw_bam_dir`;
@@ -235,7 +236,75 @@ sub run_sniffles{
 
 	my $merge_sh  = "$sh_dir/$list_name.merge_and_call.sh";
 	my $merge_bam = "$merge_bam_dir/$list_name.bwa.merge.sort.bam";
-	my $vcf       = "$vcf_dir/$list_name.sniffles.vcf";
+	my $vcf       = "$vcf_dir/$list_name.bwa.sniffles.vcf";
+
+
+	open (OUT2, "> $merge_sh");
+	print OUT2 "#!/bin/bash\n\n";
+	print OUT2 "$arg{samtools} merge $merge_bam \\\n";
+	for ($i = 0; $i < $n_bam; $i++) {
+		print OUT2  "        $bwamem_bam[$i]\\\n";
+	}
+	print OUT2 "\n\n";
+
+	print OUT2 "$arg{samtools} index $merge_bam\n";
+	print OUT2 "$arg{sniffles} -m $merge_bam --vcf $vcf --min_support $arg{min_support} --max_distance $arg{max_distance} --threads $arg{n_thread}\n";
+	print OUT2 "perl $arg{format_sniffles_vcf} $vcf\n";
+	close OUT2;
+}
+
+sub run_sniffles_ngmlr{
+
+
+	my $raw_bam_dir   = "$arg{out_dir}/sniffles_ngmlr/1_ngmlr_bam";
+	my $merge_bam_dir = "$arg{out_dir}/sniffles_ngmlr/2_merge_bam";
+	my $vcf_dir       = "$arg{out_dir}/sniffles_ngmlr/3_vcf";
+	my $sh_dir        = "$arg{out_dir}/sniffles_ngmlr/sh";
+	my $qsub          = "$sh_dir/qsub.sh";
+
+	`mkdir -p $raw_bam_dir`;
+	`mkdir -p $merge_bam_dir`;
+	`mkdir -p $vcf_dir`;
+	`mkdir -p $sh_dir`;
+
+	my @a = split("/", $arg{fastq_list});
+	my $list_name = $a[-1];
+
+	open (IN, $arg{fastq_list}) or die $!;
+	open (QSUB, "> $qsub") or die $!;
+	print QSUB "#!/bin/bash\n\n";
+
+	my $i = 0;
+	my $line;
+	my @ngmlr_bam;
+	while ($line = <IN>)
+	{
+		chomp $line;
+		@a = split("/", $line);
+		my $fq = $a[-1];
+		my $out1 = "$fq.ngmlr.sh";
+
+		my $ngmlr_sam      = "$raw_bam_dir/$fq.ngmlr.sam";
+		my $ngmlr_sort_bam = "$raw_bam_dir/$fq.ngmlr.sort.bam";
+
+		open (OUT1, "> $sh_dir/$out1") or die $!;
+		print OUT1 "#!/bin/bash\n\n";
+		print OUT1 "$arg{ngmlr}  -t $arg{n_thread} $arg{ref_bwa} -q $line -o $ngmlr_sam\n";
+		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $ngmlr_sort_bam $ngmlr_sam\n";
+		print OUT1 "$arg{samtools} index $ngmlr_sort_bam\n";
+		close OUT1;
+		$ngmlr_bam[$i] = $ngmlr_sort_bam;
+		$i++;
+
+		print QSUB "qsub -cwd -S /bin/bash -q all.q -pe smp $arg{n_thread}  $out1\n";
+	}
+	my $n_bam = $i;
+	close IN;
+	close QSUB;
+
+	my $merge_sh  = "$sh_dir/$list_name.merge_and_call.sh";
+	my $merge_bam = "$merge_bam_dir/$list_name.ngmlr.merge.sort.bam";
+	my $vcf       = "$vcf_dir/$list_name.ngmlr.sniffles.vcf";
 
 
 	open (OUT2, "> $merge_sh");
