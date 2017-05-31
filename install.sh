@@ -13,8 +13,8 @@ cd samtools-1.3.1/
 make
 cp samtools $NEXTSV_ROOT/bin/samtools1.3
 mkdir -p $NEXTSV_ROOT/bamstat/lib/ $NEXTSV_ROOT/bamstat/include
-cp htslib-1.3.1/libhts.a ../bamstat/lib/libhts.a
-cp htslib-1.3.1/htslib/* ../bamstat/include/
+cp htslib-1.3.1/libhts.a $NEXTSV_ROOT/bamstat/lib/libhts.a
+cp htslib-1.3.1/htslib/* $NEXTSV_ROOT/bamstat/include/
 
 echo "#### installation of bamstat ####"
 cd $NEXTSV_ROOT/bamstat
@@ -74,7 +74,7 @@ echo "
 
 Please add the following environmental variables to your ~/.bashrc file:
 
-export SWEETPATH=$NEXTSV_ROOT/PBSuite_15.8.24
+export SWEETPATH=$NEXTSV_ROOT/aligners_and_callers/PBSuite_15.8.24
 export PYTHONPATH=\$PYTHONPATH:\$SWEETPATH
 export PATH=\$PATH:\$SWEETPATH/bin
 
