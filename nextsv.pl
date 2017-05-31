@@ -113,20 +113,28 @@ sub run_pbhoney{
 		my $fq = $a[-1];
 		my $out = "$fq.align.sh";
 
+		my $blasr_sam      = "$blasr_bam_dir/$fq.blasr.sam";
 		my $blasr_bam      = "$blasr_bam_dir/$fq.blasr.bam";
+
+		my $tails_sam      = "$tails_bam_dir/$fq.tails.sam";
 		my $tails_bam      = "$tails_bam_dir/$fq.tails.bam";
+
 		my $tails_sort_bam = "$tails_bam_dir/$fq.tails.sort.bam";
 
 		open (OUT, "> $sh_dir/$out") or die $!;
 		print OUT "#!/bin/bash\n\n";
 
 		print OUT "\n########## blasr alignment ##########\n";
-		print OUT "$arg{blasr} $line $arg{ref_blasr} -sa $arg{ref_sa_blasr} -nproc $arg{n_thread} -bestn 1 -bam -clipping subread -out $blasr_bam\n\n";
+		print OUT "$arg{blasr} $line $arg{ref_blasr} -sa $arg{ref_sa_blasr} -nproc $arg{n_thread} -bestn 1 -sam -clipping subread -out $blasr_sam\n\n";
 
 		print OUT "\n########## tail realignment ##########\n";
-		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_bam $blasr_bam $arg{ref_blasr} \n\n";
+		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_sam $blasr_sam $arg{ref_blasr} \n\n";
 
 		print OUT "\n########## sam to bam ##########\n";
+		print OUT "$arg{samtools} view -bS  -@ $arg{n_thread} $blasr_sam > $blasr_bam\n\n";
+		print OUT "$arg{samtools} view -bS  -@ $arg{n_thread} $tails_sam > $tails_bam\n\n";
+		print OUT "rm $blasr_sam\n";
+
 		print OUT "sleep 1s\n\n";
 
 		print OUT "\n########## sort bam files ##########\n";
@@ -289,7 +297,7 @@ sub run_sniffles_ngmlr{
 
 		open (OUT1, "> $sh_dir/$out1") or die $!;
 		print OUT1 "#!/bin/bash\n\n";
-		print OUT1 "$arg{ngmlr}  -t $arg{n_thread} $arg{ref_bwa} -q $line -o $ngmlr_sam\n";
+		print OUT1 "$arg{ngmlr}  -t $arg{n_thread} -r $arg{ref_bwa} -q $line -o $ngmlr_sam\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $ngmlr_sort_bam $ngmlr_sam\n";
 		print OUT1 "$arg{samtools} index $ngmlr_sort_bam\n";
 		close OUT1;
