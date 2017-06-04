@@ -111,7 +111,7 @@ sub run_pbhoney{
 		chomp $line;
 		my @a = split("/", $line);
 		my $fq = $a[-1];
-		my $out = "$fq.align.sh";
+		my $out = "align.$fq.blasr.sh";
 
 		my $blasr_sam      = "$blasr_bam_dir/$fq.blasr.sam";
 		my $blasr_bam      = "$blasr_bam_dir/$fq.blasr.bam";
@@ -156,7 +156,7 @@ sub run_pbhoney{
 
 	my @b  = split ("/", $arg{fastq_list});
 	my $list_name  = $b[-1];
-	my $merge_sh   = "$sh_dir/$list_name.merge_and_call.sh\n";
+	my $merge_sh   = "$sh_dir/merge_and_call.$list_name.pbhoney.sh\n";
 	my $merge_bam  = "$merge_bam_dir/$list_name.bam";
 
 	open (OUT, "> $merge_sh") or die $!;
@@ -228,7 +228,7 @@ sub run_sniffles_bwa{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "$fq.align.sh";
+		my $out1 = "align.$fq.bwa.sh";
 
 		my $bwa_sam      = "$raw_bam_dir/$fq.bwa.sam";
 		my $bwa_sort_bam = "$raw_bam_dir/$fq.bwa.sort.bam";
@@ -253,7 +253,7 @@ sub run_sniffles_bwa{
 	close IN;
 	close QSUB;
 
-	my $merge_sh  = "$sh_dir/$list_name.merge_and_call.sh";
+	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.sniffles_bwa.sh";
 	my $merge_bam = "$merge_bam_dir/$list_name.bwa.merge.sort.bam";
 	my $vcf       = "$vcf_dir/$list_name.bwa.sniffles.vcf";
 
@@ -305,7 +305,7 @@ sub run_sniffles_ngmlr{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "$fq.ngmlr.sh";
+		my $out1 = "align.$fq.ngmlr.sh";
 
 		my $ngmlr_sam      = "$raw_bam_dir/$fq.ngmlr.sam";
 		my $ngmlr_sort_bam = "$raw_bam_dir/$fq.ngmlr.sort.bam";
@@ -329,7 +329,7 @@ sub run_sniffles_ngmlr{
 	close IN;
 	close QSUB;
 
-	my $merge_sh  = "$sh_dir/$list_name.merge_and_call.sh";
+	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.sniffles_ngmlr.sh";
 	my $merge_bam = "$merge_bam_dir/$list_name.ngmlr.merge.sort.bam";
 	my $vcf       = "$vcf_dir/$list_name.ngmlr.sniffles.vcf";
 
