@@ -51,6 +51,7 @@ mv bwa $NEXTSV_ROOT/bin
 
 echo "#### installation of PBHoney ####"
 cd $NEXTSV_ROOT/aligners_and_callers
+pip install --user argparse
 pip install --user pysam
 pip install --user networkx
 pip install --user h5py
