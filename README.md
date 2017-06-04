@@ -23,7 +23,8 @@ NextSV is an computational pipeline that allows structural variant (SV) calling 
 ## Installation
 
    Prerequisites:
-   zlib-dev, cmake, gcc/g++(>=4.8.2)
+   
+   zlib-dev, cmake, gcc/g++(>=4.8.2), pip
 
    Download NextSV: 
 
