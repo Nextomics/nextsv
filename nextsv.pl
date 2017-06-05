@@ -68,8 +68,8 @@ if ($arg{enable_PBHoney_Spots} and $arg{enable_Sniffles}){
 	`mkdir -p $combine_dir`;
 	open (SH, "> $combine_sh") or die $!;
 	print SH "#!/bin/bash\n\n";
-	my @c  = split ("/", $arg{fastq_list});
-	my $list_name  = $c[-1];
+	my @c = split ("/", $arg{fastq_list});
+	my $list_name = $c[-1];
 
 	print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.DEL.bed $combine_dir/ \n";
 	print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.INS.bed $combine_dir/ \n";
@@ -82,14 +82,14 @@ if ($arg{enable_PBHoney_Spots} and $arg{enable_Sniffles}){
 
 sub rtrim { 
 	my $s = shift; 
-	$s =~ s/\s+$//;       
+	$s =~ s/\s+$//;
 	return $s
 };
 
 sub run_pbhoney{
 
-	my $blasr_bam_dir = "$arg{out_dir}/pbhoney/1_blasr_bam"; 
-	my $tails_bam_dir = "$arg{out_dir}/pbhoney/2_tails_bam";   
+	my $blasr_bam_dir = "$arg{out_dir}/pbhoney/1_blasr_bam";
+	my $tails_bam_dir = "$arg{out_dir}/pbhoney/2_tails_bam";
 	my $merge_bam_dir = "$arg{out_dir}/pbhoney/3_merge_bam";
 	my $result_dir    = "$arg{out_dir}/pbhoney/4_results";
 	my $sh_dir        = "$arg{out_dir}/pbhoney/sh";
@@ -132,8 +132,8 @@ sub run_pbhoney{
 		print OUT "python $arg{honey} pie --nproc $arg{n_thread} --output $tails_sam $blasr_sam $arg{ref_blasr} \n\n";
 
 		print OUT "\n########## sam to bam ##########\n";
-		print OUT "$arg{samtools} view -bS  -@ $arg{n_thread} $blasr_sam > $blasr_bam\n\n";
-		print OUT "$arg{samtools} view -bS  -@ $arg{n_thread} $tails_sam > $tails_bam\n\n";
+		print OUT "$arg{samtools} view -bS -@ $arg{n_thread} $blasr_sam > $blasr_bam\n\n";
+		print OUT "$arg{samtools} view -bS -@ $arg{n_thread} $tails_sam > $tails_bam\n\n";
 		print OUT "rm $blasr_sam\n";
 
 		print OUT "sleep 1s\n\n";
@@ -148,13 +148,13 @@ sub run_pbhoney{
 		close OUT;
 		$split_bam[$i] = "$tails_sort_bam";
 		$i++;
-		print QSUB "qsub -V -cwd -S /bin/bash -pe smp $arg{n_thread}  $out && sleep 1s\n";
+		print QSUB "qsub -V -cwd -S /bin/bash -pe smp $arg{n_thread} $out && sleep 1s\n";
 	}
 	my $n_bam = $i;
 	close QSUB;
 	close LIST;
 
-	my @b  = split ("/", $arg{fastq_list});
+	my @b = split ("/", $arg{fastq_list});
 	my $list_name  = $b[-1];
 	my $merge_sh   = "$sh_dir/merge_and_call.$list_name.pbhoney.sh\n";
 	my $merge_bam  = "$merge_bam_dir/$list_name.bam";
@@ -187,7 +187,7 @@ sub run_pbhoney{
 			$arg{consensus} = "None";
 		}
 		print OUT "\n########## PBhoney-Spots ##########\n";
-		print OUT "python $arg{honey} spots --nproc $arg{n_thread} --reference $arg{ref_blasr} --threshold $arg{threshold} --minErrReads $arg{minErrReads}  --consensus $arg{consensus}  --output $spots_out_prefix $merge_bam\n\n";
+		print OUT "python $arg{honey} spots --nproc $arg{n_thread} --reference $arg{ref_blasr} --threshold $arg{threshold} --minErrReads $arg{minErrReads} --consensus $arg{consensus} --output $spots_out_prefix $merge_bam\n\n";
 		print OUT "sleep 1s\n";
 		print OUT "perl $arg{format_pbhoney_spots} $spots_out_prefix.spots\n"; 
 	}
@@ -237,7 +237,7 @@ sub run_sniffles_bwa{
 		print OUT1 "#!/bin/bash\n\n";
 		print OUT1 "echo \"program started at:\"";
 		print OUT1 "&& date\n\n";
-		print OUT1 "$arg{bwa} mem -x pacbio -t $arg{n_thread} -M $arg{ref_bwa} $line  > $bwa_sam\n\n";
+		print OUT1 "$arg{bwa} mem -x pacbio -t $arg{n_thread} -M $arg{ref_bwa} $line > $bwa_sam\n\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $bwa_sort_bam $bwa_sam\n\n";
 		print OUT1 "$arg{samtools} index $bwa_sort_bam\n\n";
 		#print OUT1 "rm $bwa_sam\n\n";
@@ -314,7 +314,7 @@ sub run_sniffles_ngmlr{
 		print OUT1 "#!/bin/bash\n\n";
 		print OUT1 "echo \"program started at:\"";
 		print OUT1 "&& date\n\n";
-		print OUT1 "$arg{ngmlr}  -t $arg{n_thread} -r $arg{ref_bwa} -q $line -o $ngmlr_sam\n\n";
+		print OUT1 "$arg{ngmlr} -t $arg{n_thread} -r $arg{ref_bwa} -q $line -o $ngmlr_sam\n\n";
 		print OUT1 "$arg{samtools} sort -@ $arg{n_thread} -o $ngmlr_sort_bam $ngmlr_sam\n\n";
 		print OUT1 "$arg{samtools} index $ngmlr_sort_bam\n\n";
 		print OUT1 "echo \"program finished at:\"";
@@ -323,7 +323,7 @@ sub run_sniffles_ngmlr{
 		$ngmlr_bam[$i] = $ngmlr_sort_bam;
 		$i++;
 
-		print QSUB "qsub -V -cwd -S /bin/bash  -pe smp $arg{n_thread}  $out1 && sleep 1s\n";
+		print QSUB "qsub -V -cwd -S /bin/bash -pe smp $arg{n_thread} $out1 && sleep 1s\n";
 	}
 	my $n_bam = $i;
 	close IN;
@@ -340,7 +340,7 @@ sub run_sniffles_ngmlr{
 	print OUT2 "&& date\n\n";
 	print OUT2 "$arg{samtools} merge $merge_bam \\\n";
 	for ($i = 0; $i < $n_bam; $i++) {
-		print OUT2  "        $ngmlr_bam[$i]\\\n";
+		print OUT2 "        $ngmlr_bam[$i]\\\n";
 	}
 	print OUT2 "\n\n";
 
