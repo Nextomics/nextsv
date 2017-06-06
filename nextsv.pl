@@ -106,20 +106,22 @@ sub run_pbhoney{
 	my $i = 0;
 	my @split_bam;
 	my $prefix;
+	my $fq_index = 0;
 	while (my $line = <LIST>)
 	{
+		$fq_index += 1;
 		chomp $line;
 		my @a = split("/", $line);
 		my $fq = $a[-1];
-		my $out = "align.$fq.blasr.sh";
+		my $out = "align.$fq.$fq_index.blasr.sh";
 
-		my $blasr_sam      = "$blasr_bam_dir/$fq.blasr.sam";
-		my $blasr_bam      = "$blasr_bam_dir/$fq.blasr.bam";
+		my $blasr_sam      = "$blasr_bam_dir/$fq.$fq_index.blasr.sam";
+		my $blasr_bam      = "$blasr_bam_dir/$fq.$fq_index.blasr.bam";
 
-		my $tails_sam      = "$tails_bam_dir/$fq.tails.sam";
-		my $tails_bam      = "$tails_bam_dir/$fq.tails.bam";
+		my $tails_sam      = "$tails_bam_dir/$fq.$fq_index.tails.sam";
+		my $tails_bam      = "$tails_bam_dir/$fq.$fq_index.tails.bam";
 
-		my $tails_sort_bam = "$tails_bam_dir/$fq.tails.sort.bam";
+		my $tails_sort_bam = "$tails_bam_dir/$fq.$fq_index.tails.sort.bam";
 
 		open (OUT, "> $sh_dir/$out") or die $!;
 		print OUT "#!/bin/bash\n\n";
@@ -223,15 +225,16 @@ sub run_sniffles_bwa{
 	my $i = 0;
 	my $line;
 	my @bwamem_bam;
+	my $fq_index = 0;
 	while ($line = <IN>)
 	{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "align.$fq.bwa.sh";
+		my $out1 = "align.$fq.$fq_index.bwa.sh";
 
-		my $bwa_sam      = "$raw_bam_dir/$fq.bwa.sam";
-		my $bwa_sort_bam = "$raw_bam_dir/$fq.bwa.sort.bam";
+		my $bwa_sam      = "$raw_bam_dir/$fq.$fq_index.bwa.sam";
+		my $bwa_sort_bam = "$raw_bam_dir/$fq.$fq_index.bwa.sort.bam";
 
 		open (OUT1, "> $sh_dir/$out1") or die $!;
 		print OUT1 "#!/bin/bash\n\n";
@@ -300,15 +303,17 @@ sub run_sniffles_ngmlr{
 	my $i = 0;
 	my $line;
 	my @ngmlr_bam;
+	my $fq_index = 0;
 	while ($line = <IN>)
 	{
+		$fq_index += 1;
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "align.$fq.ngmlr.sh";
+		my $out1 = "align.$fq.$fq_index.ngmlr.sh";
 
-		my $ngmlr_sam      = "$raw_bam_dir/$fq.ngmlr.sam";
-		my $ngmlr_sort_bam = "$raw_bam_dir/$fq.ngmlr.sort.bam";
+		my $ngmlr_sam      = "$raw_bam_dir/$fq.$fq_index.ngmlr.sam";
+		my $ngmlr_sort_bam = "$raw_bam_dir/$fq.$fq_index.ngmlr.sort.bam";
 
 		open (OUT1, "> $sh_dir/$out1") or die $!;
 		print OUT1 "#!/bin/bash\n\n";
