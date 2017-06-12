@@ -7,7 +7,7 @@ $usage   .= "Version: 0.4.0\n";
 die $usage if (@ARGV < 1);
 
 my $min_length = 50;        # min sv length for DEL, DUP and INV
-my $max_length = 1000000;   # max sv length for DEL, DUP and INV
+my $max_length = 100000000;   # max sv length for DEL, DUP and INV
 my $in = shift(@ARGV);
 $in =~ /(.*).vcf$/;
 my $in_prefix = $1;

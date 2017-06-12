@@ -8,7 +8,7 @@ $usage    .= "Version: 0.4.0\n";
 die $usage if (@ARGV < 1);
 
 my $min_length = 50;     # min sv length for output
-my $max_length = 1000000; # max sv length for output
+my $max_length = 100000000; # max sv length for output
 
 my $in = shift(@ARGV);
 my $out1 = "$in.INS.bed"; # insertion calls in bed format
