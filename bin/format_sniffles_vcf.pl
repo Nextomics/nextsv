@@ -7,7 +7,8 @@ $usage   .= "Version: 0.4.0\n";
 die $usage if (@ARGV < 1);
 
 my $min_length = 50;        # min sv length for DEL, DUP and INV
-my $max_length = 100000000;   # max sv length for DEL, DUP and INV
+my $max_length = 10000000;   # max sv length for DEL, DUP and INV
+my $min_read_supp = 2;
 my $in = shift(@ARGV);
 $in =~ /(.*).vcf$/;
 my $in_prefix = $1;
@@ -44,25 +45,26 @@ while (my $line = <IN>)
 	chomp $line;
 	(my $chr, my $start, my $id, my $ref, my $type, my $qual, my $filter, my $info, my $format, my $sample) = split("\t", $line);
 
-	my $index = index($info, "CHR2");
+	my $index = index($info, "CHR2=");
 	my $chr2  = substr($info, $index+length("CHR2="));
 	my @b = split(";", $chr2);
 	my $chr2 = $b[0];
 
-	my $index = index($info, "END");
+	my $index = index($info, "END=");
 	my $end = substr($info, $index+length("END="));
 	my @b = split(";", $end);
 	my $end = $b[0];
 
-	my $index = index($info, "SVLEN");
+	my $index = index($info, "SVLEN=");
 	my $sv_length = substr($info, $index+length("SVLEN="));
 	my @b = split(";", $sv_length);
 	my $sv_length = $b[0];
 
-	my $index = index($info, "RE");
+	my $index = index($info, "RE=");
 	my $rd_supp = substr($info, $index+length("RE="));
 	my @b = split(";", $rd_supp);
 	my $rd_supp = $b[0];
+	next if ($rd_supp < $min_read_supp );
 
 	if ($type =~ /TRA/){
 		if (exists ($hash{$chr}) and exists ($hash{$chr2})){
