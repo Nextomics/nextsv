@@ -1,6 +1,6 @@
 # NextSV: Automated structrual variation detection from low coverage long-read sequencing.
 
-NextSV is an computational pipeline that allows structural variant (SV) calling from PacBio sequencing data using PBhoney and Sniffles. NextSV takes FASTA or FASTQ files as input. Once the SV caller is selected by user, NextSV automatically chooses the compatible aligner and performs mapping. The alignments will be automatically sorted and then presented to the SV caller. Users can change the parameters by modifying its configuration file. When the analysis is finished, NextSV will examine the FASTA/FASTQ, BAM, and result files and generate a report showing various statistics. If more than both callers are selected, NextSV will format the raw result files (.tails, .spots, or .vcf files) into bed files and generate the intersection or union call set for the purpose of higher accuracy or sensitivity.
+NextSV, a meta SV caller and a computational pipeline to perform SV calling from low coverage long-read sequencing data. NextSV integrates three aligners and three SV callers and generates two integrated call sets (sensitive/stringent) for different analysis purpose. The output of NextSV is in ANNOVAR-compatible bed format. Users can easily perform downstream annotation using ANNOVAR and disease gene discovery using Phenolyzer.
 
 ## Features
 
