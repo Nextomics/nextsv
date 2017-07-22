@@ -211,10 +211,10 @@ sub run_pbhoney{
 
 sub run_bwa_sniffles{
 
-	my $raw_bam_dir   = "$arg{out_dir}/sniffles_bwa/1_bwa_bam";
-	my $merge_bam_dir = "$arg{out_dir}/sniffles_bwa/2_merge_bam";
-	my $vcf_dir       = "$arg{out_dir}/sniffles_bwa/3_vcf";
-	my $sh_dir        = "$arg{out_dir}/sniffles_bwa/sh";
+	my $raw_bam_dir   = "$arg{out_dir}/bwa_sniffles/1_bwa_bam";
+	my $merge_bam_dir = "$arg{out_dir}/bwa_sniffles/2_merge_bam";
+	my $vcf_dir       = "$arg{out_dir}/bwa_sniffles/3_vcf";
+	my $sh_dir        = "$arg{out_dir}/bwa_sniffles/sh";
 	my $qsub          = "$sh_dir/qsub.sh";
 
 	`mkdir -p $raw_bam_dir`;
@@ -263,7 +263,7 @@ sub run_bwa_sniffles{
 	close IN;
 	close QSUB;
 
-	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.sniffles_bwa.sh";
+	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.bwa_sniffles.sh";
 	my $merge_bam = "$merge_bam_dir/$list_name.bwa.merge.sort.bam";
 	my $vcf       = "$vcf_dir/$list_name.bwa.sniffles.vcf";
 
@@ -286,13 +286,13 @@ sub run_bwa_sniffles{
 	close OUT2;
 }
 
-sub run_sniffles_ngmlr{
+sub run_ngmlr_sniffles{
 
 
-	my $raw_bam_dir   = "$arg{out_dir}/sniffles_ngmlr/1_ngmlr_bam";
-	my $merge_bam_dir = "$arg{out_dir}/sniffles_ngmlr/2_merge_bam";
-	my $vcf_dir       = "$arg{out_dir}/sniffles_ngmlr/3_vcf";
-	my $sh_dir        = "$arg{out_dir}/sniffles_ngmlr/sh";
+	my $raw_bam_dir   = "$arg{out_dir}/ngmlr_sniffles/1_ngmlr_bam";
+	my $merge_bam_dir = "$arg{out_dir}/ngmlr_sniffles/2_merge_bam";
+	my $vcf_dir       = "$arg{out_dir}/ngmlr_sniffles/3_vcf";
+	my $sh_dir        = "$arg{out_dir}/ngmlr_sniffles/sh";
 	my $qsub          = "$sh_dir/qsub.sh";
 
 	`mkdir -p $raw_bam_dir`;
@@ -341,7 +341,7 @@ sub run_sniffles_ngmlr{
 	close IN;
 	close QSUB;
 
-	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.sniffles_ngmlr.sh";
+	my $merge_sh  = "$sh_dir/merge_and_call.$list_name.ngmlr_sniffles.sh";
 	my $merge_bam = "$merge_bam_dir/$list_name.ngmlr.merge.sort.bam";
 	my $vcf       = "$vcf_dir/$list_name.ngmlr.sniffles.vcf";
 
