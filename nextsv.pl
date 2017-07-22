@@ -6,18 +6,19 @@ use Cwd 'abs_path';
 use File::Basename;
 
 my $usage  = "
-Program:  NextSV (Automated SV detection for long-read sequencing)
-Version:  0.4.0
+Program:  NextSV (SV detection from long-read sequencing)
+Version:  1.0.0
 Usage:    perl $0 <config>
 Contact:  Li Fang (fangli\@grandomics.com)\n\n";
 
 die $usage if (@ARGV < 1);
 
-my $cfg = shift (@ARGV);
+my $config = shift (@ARGV);
 my $nextsv_dir = abs_path(dirname($0));
 
+##### analysis of config file #####
 my %arg;
-open (CFG, $cfg) or die $!;
+open (CFG, $config) or die $!;
 while (my $line = <CFG>)
 {
 	chomp $line;
@@ -35,6 +36,9 @@ while (my $line = <CFG>)
 }
 close CFG;
 
+
+##### parameters and settings #####
+
 $arg{blasr}                 = "$nextsv_dir/bin/blasr";
 $arg{bwa}                   = "$nextsv_dir/bin/bwa";
 $arg{ngmlr}                 = "$nextsv_dir/bin/ngmlr";
@@ -51,17 +55,21 @@ $arg{format_pbhoney_spots}  = "$nextsv_dir/bin/format_pbhoney_spots.pl";
 
 
 if ($arg{enable_PBHoney_Spots} == 1 or $arg{enable_PBHoney_Tails} == 1){
-	print "Generating scripts for PBHoney...\n";
+	print "Generating scripts for BLASR/PBHoney...\n";
 	&run_pbhoney;	
 }
 
-if ($arg{enable_Sniffles} == 1){
-	print "Generating scripts for Sniffles...\n";
-	&run_sniffles_bwa;
-	&run_sniffles_ngmlr;
+if ($arg{enable_bwa_Sniffles} == 1){
+	print "Generating scripts for bwa/Sniffles...\n";
+	&run_bwa_sniffles;
 }
 
-if ($arg{enable_PBHoney_Spots} and $arg{enable_Sniffles}){
+if ($arg{enable_ngmlr_Sniffles} == 1){
+	print "Generating scripts for ngmlr/Sniffles...\n";
+	&run_ngmlr_sniffles;
+}
+
+if ($arg{enable_PBHoney_Spots} and $arg{enable_ngmlr_Sniffles}){
 	my $combine_dir = "$arg{out_dir}/combination";
 	my $combine_sh = "$combine_dir/combine.sh";
 
@@ -201,8 +209,7 @@ sub run_pbhoney{
 
 }
 
-sub run_sniffles_bwa{
-
+sub run_bwa_sniffles{
 
 	my $raw_bam_dir   = "$arg{out_dir}/sniffles_bwa/1_bwa_bam";
 	my $merge_bam_dir = "$arg{out_dir}/sniffles_bwa/2_merge_bam";
