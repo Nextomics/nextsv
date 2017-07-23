@@ -76,7 +76,7 @@ if ($arg{enable_PBHoney_Spots} and $arg{enable_ngmlr_Sniffles}){
 	`mkdir -p $combine_dir`;
 	open (SH, "> $combine_sh") or die $!;
 	print SH "#!/bin/bash\n\n";
-	my @c = split ("/", $arg{fastq_list});
+	my @c = split ("/", $arg{input_file_list});
 	my $list_name = $c[-1];
 
 	print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.DEL.bed $combine_dir/ \n";
@@ -108,7 +108,7 @@ sub run_pbhoney{
 	`mkdir -p $result_dir`;
 	`mkdir -p $sh_dir`;
 
-	open (LIST, $arg{fastq_list}) or die $!;
+	open (LIST, $arg{input_file_list}) or die $!;
 	open (QSUB, "> $sh_dir/qsub.sh") or die $!;
 	print QSUB "#!/bin/bash\n\n";
 	my $i = 0;
@@ -164,7 +164,7 @@ sub run_pbhoney{
 	close QSUB;
 	close LIST;
 
-	my @b = split ("/", $arg{fastq_list});
+	my @b = split ("/", $arg{input_file_list});
 	my $list_name  = $b[-1];
 	my $merge_sh   = "$sh_dir/merge_and_call.$list_name.pbhoney.sh\n";
 	my $merge_bam  = "$merge_bam_dir/$list_name.bam";
@@ -222,10 +222,10 @@ sub run_bwa_sniffles{
 	`mkdir -p $vcf_dir`;
 	`mkdir -p $sh_dir`;
 
-	my @a = split("/", $arg{fastq_list});
+	my @a = split("/", $arg{input_file_list});
 	my $list_name = $a[-1];
 
-	open (IN, $arg{fastq_list}) or die $!;
+	open (IN, $arg{input_file_list}) or die $!;
 	open (QSUB, "> $qsub") or die $!;
 	print QSUB "#!/bin/bash\n\n";
 
@@ -300,10 +300,10 @@ sub run_ngmlr_sniffles{
 	`mkdir -p $vcf_dir`;
 	`mkdir -p $sh_dir`;
 
-	my @a = split("/", $arg{fastq_list});
+	my @a = split("/", $arg{input_file_list});
 	my $list_name = $a[-1];
 
-	open (IN, $arg{fastq_list}) or die $!;
+	open (IN, $arg{input_file_list}) or die $!;
 	open (QSUB, "> $qsub") or die $!;
 	print QSUB "#!/bin/bash\n\n";
 
