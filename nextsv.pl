@@ -144,7 +144,6 @@ sub run_pbhoney{
 		print OUT "\n########## sam to bam ##########\n";
 		print OUT "$arg{samtools} view -bS -@ $arg{n_thread} $blasr_sam > $blasr_bam\n\n";
 		print OUT "$arg{samtools} view -bS -@ $arg{n_thread} $tails_sam > $tails_bam\n\n";
-		print OUT "rm $blasr_sam\n";
 
 		print OUT "sleep 1s\n\n";
 
@@ -152,7 +151,6 @@ sub run_pbhoney{
 		print OUT "$arg{samtools} sort -@ $arg{n_thread} -o $tails_sort_bam $tails_bam\n\n";
 		print OUT "$arg{samtools} index $tails_sort_bam\n";
 		print OUT "sleep 1s\n\n";
-		#print OUT "rm $tails_bam\n\n";
 		print OUT "echo \"program finished at:\"";
 		print OUT "&& date\n\n";
 		close OUT;
