@@ -53,7 +53,7 @@ For questions/bugs/issues, please post on [GitHub](https://github.com/Nextomics/
 
 ## Citation
 
-Fang L, Hu J, Wang D, Wang K. [Evaluation on Efficient Detection of Structural Variants at Low Coverage by Long-Read Sequencing](http://biorxiv.org/content/early/2016/12/09/092544). bioRxiv, doi: 10.1101/092544
+Fang L, Hu J, Wang D, Wang K. [NextSV: a computational pipeline for structural variation analysis from low-coverage long-read sequencing](http://www.biorxiv.org/content/early/2017/07/17/092544). bioRxiv, doi: 10.1101/092544
 
 ## More information
 
