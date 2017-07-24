@@ -10,8 +10,6 @@ NextSV, a meta SV caller and a computational pipeline to perform SV calling from
 
 * Fast and easy customization
 
-* Sun Grid Engine (SGE) integration
-
 ## Supported aligners
 
    BLASR, BWA-MEM, NGMLR
