@@ -69,24 +69,103 @@ if ($arg{enable_ngmlr_Sniffles} == 1){
 	&run_ngmlr_sniffles;
 }
 
-if ($arg{enable_PBHoney_Spots} and $arg{enable_ngmlr_Sniffles}){
-	my $combine_dir = "$arg{out_dir}/combination";
-	my $combine_sh = "$combine_dir/combine.sh";
+if ($arg{enable_PBHoney_Spots} + $arg{enable_PBHoney_Tails} + $arg{enable_bwa_Sniffles} + $arg{enable_ngmlr_Sniffles} > 1){
+	my $nextsv_res_dir = "$arg{out_dir}/nextsv_results";
+	my $nextsv_sh      = "$nextsv_res_dir/nextsv.sh";
 
-	`mkdir -p $combine_dir`;
-	open (SH, "> $combine_sh") or die $!;
+	`mkdir -p $nextsv_res_dir`;
+	`chmod +x $nextsv_sh`;
+
+	open (SH, "> $nextsv_sh") or die $!;
 	print SH "#!/bin/bash\n\n";
 	my @c = split ("/", $arg{input_file_list});
 	my $list_name = $c[-1];
 
-	print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.DEL.bed $combine_dir/ \n";
-	print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.INS.bed $combine_dir/ \n";
-	print SH "cp $arg{out_dir}/sniffles/3_vcf/$list_name.sniffles.vcf.DEL.bed $combine_dir/ \n";
-	print SH "cp $arg{out_dir}/sniffles/3_vcf/$list_name.sniffles.vcf.INS.bed $combine_dir/ \n";
-	print SH "$arg{merge2sv} $combine_dir/$list_name.spots.DEL.bed $combine_dir/$list_name.sniffles.vcf.DEL.bed $combine_dir/$list_name.PBHoneySpots-Sniffles.intersect.DEL.bed $combine_dir/$list_name.PBHoneySpots-Sniffles.union.DEL.bed DEL\n"; 
-	print SH "$arg{merge2sv} $combine_dir/$list_name.spots.INS.bed $combine_dir/$list_name.sniffles.vcf.INS.bed $combine_dir/$list_name.PBHoneySpots-Sniffles.intersect.INS.bed $combine_dir/$list_name.PBHoneySpots-Sniffles.union.INS.bed INS\n"; 
+	if ($arg{enable_PBHoney_Spots} == 1){
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.DEL.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.spots.INS.bed $nextsv_res_dir/ \n";
+	}
+
+	if ($arg{enable_PBHoney_Tails} == 1){
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.tails.DEL.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.tails.INS.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.tails.INV.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/pbhoney/4_results/$list_name.tails.TRA.vcf $nextsv_res_dir/ \n";
+	}
+
+	if ($arg{enable_bwa_Sniffles} == 1){
+		print SH "cp $arg{out_dir}/bwa_sniffles/3_vcf/$list_name.bwa.sniffles.vcf.DEL.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/bwa_sniffles/3_vcf/$list_name.bwa.sniffles.vcf.INS.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/bwa_sniffles/3_vcf/$list_name.bwa.sniffles.vcf.INV.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/bwa_sniffles/3_vcf/$list_name.bwa.sniffles.vcf.DUP.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/bwa_sniffles/3_vcf/$list_name.bwa.sniffles.TRA.vcf $nextsv_res_dir/ \n";
+	}
+	
+	if ($arg{enable_ngmlr_Sniffles} == 1){
+		print SH "cp $arg{out_dir}/ngmlr_sniffles/3_vcf/$list_name.ngmlr.sniffles.vcf.DEL.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/ngmlr_sniffles/3_vcf/$list_name.ngmlr.sniffles.vcf.INS.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/ngmlr_sniffles/3_vcf/$list_name.ngmlr.sniffles.vcf.INV.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/ngmlr_sniffles/3_vcf/$list_name.ngmlr.sniffles.vcf.DUP.bed $nextsv_res_dir/ \n";
+		print SH "cp $arg{out_dir}/ngmlr_sniffles/3_vcf/$list_name.ngmlr.sniffles.TRA.vcf $nextsv_res_dir/ \n";
+	}
+
+	my $pbhoney_del = "";
+	my $pbhoney_ins = "";
+
+	if ($arg{enable_PBHoney_Spots} == 1 and $arg{enable_PBHoney_Tails} == 1){
+
+		$pbhoney_del = "$nextsv_res_dir/$list_name.PBHoney.DEL.bed";
+		$pbhoney_ins = "$nextsv_res_dir/$list_name.PBHoney.INS.bed";
+
+		print SH "$arg{merge2sv} $nextsv_res_dir/$list_name.spots.DEL.bed $nextsv_res_dir/$list_name.tails.DEL.bed $nextsv_res_dir/$list_name.PBHoney-Spots-Tails.intersect.DEL.bed $pbhoney_del DEL\n";
+		print SH "$arg{merge2sv} $nextsv_res_dir/$list_name.spots.INS.bed $nextsv_res_dir/$list_name.tails.INS.bed $nextsv_res_dir/$list_name.PBHoney-Spots-Tails.intersect.INS.bed $pbhoney_ins INS\n";
+		print SH "rm $nextsv_res_dir/$list_name.PBHoney-Spots-Tails.intersect.DEL.bed\n";
+		print SH "rm $nextsv_res_dir/$list_name.PBHoney-Spots-Tails.intersect.INS.bed\n";
+
+	}elsif ($arg{enable_PBHoney_Spots} == 1){
+
+		$pbhoney_del = "$nextsv_res_dir/$list_name.PBHoney.DEL.bed";
+		$pbhoney_ins = "$nextsv_res_dir/$list_name.PBHoney.INS.bed";
+
+		print SH "ln -s $nextsv_res_dir/$list_name.spots.DEL.bed $pbhoney_del\n";
+		print SH "ln -s $nextsv_res_dir/$list_name.spots.INS.bed $pbhoney_ins\n";
+
+	}elsif ($arg{enable_PBHoney_Tails} == 1){
+
+		$pbhoney_del = "$nextsv_res_dir/$list_name.PBHoney.DEL.bed";
+		$pbhoney_ins = "$nextsv_res_dir/$list_name.PBHoney.INS.bed";
+
+		print SH "ln -s $nextsv_res_dir/$list_name.tails.DEL.bed $pbhoney_del\n";
+		print SH "ln -s $nextsv_res_dir/$list_name.tails.INS.bed $pbhoney_ins\n";
+	}
+
+	my $nexsv_sensitive_del = "";
+	my $nexsv_sensitive_ins = "";
+	my $nexsv_stringent_del = "";
+	my $nexsv_stringent_ins = "";
+
+	$nexsv_sensitive_del = "$nextsv_res_dir/$list_name.NextSV.sensitive.DEL.bed";
+	$nexsv_sensitive_ins = "$nextsv_res_dir/$list_name.NextSV.sensitive.INS.bed";
+	$nexsv_stringent_del = "$nextsv_res_dir/$list_name.NextSV.stringent.DEL.bed";
+	$nexsv_stringent_ins = "$nextsv_res_dir/$list_name.NextSV.stringent.INS.bed";
+
+	if ( ($arg{enable_PBHoney_Spots} == 1 or $arg{enable_PBHoney_Tails} == 1) and $arg{enable_ngmlr_Sniffles} == 1 ){
+
+		print SH "$arg{merge2sv} $pbhoney_del $nextsv_res_dir/$list_name.ngmlr.sniffles.vcf.DEL.bed $nexsv_stringent_del  $nexsv_sensitive_del DEL\n";	
+		print SH "$arg{merge2sv} $pbhoney_ins $nextsv_res_dir/$list_name.ngmlr.sniffles.vcf.INS.bed $nexsv_stringent_ins  $nexsv_sensitive_ins INS\n";	
+
+	}
+
+	if ( ($arg{enable_PBHoney_Spots} == 1 or $arg{enable_PBHoney_Tails} == 1) and $arg{enable_bwa_Sniffles} == 1 ){
+
+		print SH "$arg{merge2sv} $pbhoney_del $nextsv_res_dir/$list_name.bwa.sniffles.vcf.DEL.bed $nexsv_stringent_del  $nexsv_sensitive_del DEL\n";	
+		print SH "$arg{merge2sv} $pbhoney_ins $nextsv_res_dir/$list_name.bwa.sniffles.vcf.INS.bed $nexsv_stringent_ins  $nexsv_sensitive_ins INS\n";	
+
+	}
+
 	close SH;
 }
+
 
 sub rtrim { 
 	my $s = shift; 
@@ -121,7 +200,7 @@ sub run_pbhoney{
 		chomp $line;
 		my @a = split("/", $line);
 		my $fq = $a[-1];
-		my $out = "align.$fq.$fq_index.blasr.sh";
+		my $out = "blasr_align.$fq.$fq_index.sh";
 
 		my $blasr_sam      = "$blasr_bam_dir/$fq.$fq_index.blasr.sam";
 		my $blasr_bam      = "$blasr_bam_dir/$fq.$fq_index.blasr.bam";
@@ -236,7 +315,7 @@ sub run_bwa_sniffles{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "align.$fq.$fq_index.bwa.sh";
+		my $out1 = "bwa_align.$fq.$fq_index.sh";
 
 		my $bwa_sam      = "$raw_bam_dir/$fq.$fq_index.bwa.sam";
 		my $bwa_sort_bam = "$raw_bam_dir/$fq.$fq_index.bwa.sort.bam";
@@ -315,7 +394,7 @@ sub run_ngmlr_sniffles{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
-		my $out1 = "align.$fq.$fq_index.ngmlr.sh";
+		my $out1 = "ngmlr_align.$fq.$fq_index.sh";
 
 		my $ngmlr_sam      = "$raw_bam_dir/$fq.$fq_index.ngmlr.sam";
 		my $ngmlr_sort_bam = "$raw_bam_dir/$fq.$fq_index.ngmlr.sort.bam";
