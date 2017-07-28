@@ -74,7 +74,6 @@ if ($arg{enable_PBHoney_Spots} + $arg{enable_PBHoney_Tails} + $arg{enable_bwa_Sn
 	my $nextsv_sh      = "$nextsv_res_dir/nextsv.sh";
 
 	`mkdir -p $nextsv_res_dir`;
-	`chmod +x $nextsv_sh`;
 
 	open (SH, "> $nextsv_sh") or die $!;
 	print SH "#!/bin/bash\n\n";
@@ -164,6 +163,7 @@ if ($arg{enable_PBHoney_Spots} + $arg{enable_PBHoney_Tails} + $arg{enable_bwa_Sn
 	}
 
 	close SH;
+	`chmod +x $nextsv_sh`;
 }
 
 
