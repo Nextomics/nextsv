@@ -67,7 +67,7 @@ export PATH=\$PATH:\$SWEETPATH/bin
 cd $NEXTSV_ROOT
 
 echo "#### installation of PBHoney ####"
-cp $NEXTSV_ROOT/aligners_and_callers/blasr $NEXTSV_ROOT/bin/blasr
+mv $NEXTSV_ROOT/aligners_and_callers/blasr $NEXTSV_ROOT/bin/blasr
 
 echo "
 ########################################################################
