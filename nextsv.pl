@@ -315,6 +315,7 @@ sub run_bwa_sniffles{
 		chomp $line;
 		@a = split("/", $line);
 		my $fq = $a[-1];
+		$fq_index += 1;
 		my $out1 = "bwa_align.$fq.$fq_index.sh";
 
 		my $bwa_sam      = "$raw_bam_dir/$fq.$fq_index.bwa.sam";
