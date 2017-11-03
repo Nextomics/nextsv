@@ -6,44 +6,43 @@ NextSV, a meta SV caller and a computational pipeline to perform SV calling from
 
 * Suitable for identifying structural variants from Mendelian diseases.
 
-* Automatic installation of all aligners and SV callers.
-
 * Fast and easy customization
 
 ## Supported aligners
 
-   BLASR, BWA-MEM, NGMLR
+BLASR, BWA-MEM, NGMLR
 
 ## Supported SV callers
 
-   PBHoney, Sniffles
+PBHoney, Sniffles
 
 ## Installation
 
-   Prerequisites:
+Prerequisites:
    
-   zlib-dev, cmake, gcc/g++(>=4.8.2), pip
+zlib-dev, cmake, gcc/g++(>=4.8.2), pip
 
-   Download NextSV: 
+Download NextSV: 
 
-   ```
-   git clone https://github.com/Nextomics/nextsv.git
-   ```
+```
+git clone https://github.com/Nextomics/nextsv.git
+```
 
-   Install:
-   ```
-   cd nextsv/
-   sh install.sh
-   cp ~/.bashrc  ~/.bashrc.bak
-   cat setup-env.sh >> ~/.bashrc
+Install:
+```
+cd nextsv/
+sh install.sh
+cp ~/.bashrc  ~/.bashrc.bak
+cat setup-env.sh >> ~/.bashrc
 
-   ```
+```
 
 ## Usage
-   ```
-   perl nextsv.pl [config_file]
-   ```
-   for configuration file, please refer to example.config
+```
+python nextsv.py [config_file]
+```
+A template config file can be found in example.config. The following parameters can be set in the config file:
+
 
 ## Contact
 
