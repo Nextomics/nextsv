@@ -4,50 +4,24 @@ NEXTSV_ROOT=$PWD
 
 mkdir -p bin
 
-echo "#### installation of samtools-1.3 and htslib ####"
-cd $NEXTSV_ROOT/aligners_and_callers
-tar -xjf samtools-1.3.1.tar.bz2
-cd samtools-1.3.1/
-./configure
-make
-cp samtools $NEXTSV_ROOT/bin/samtools1.3
-mkdir -p $NEXTSV_ROOT/bamstat/lib/ $NEXTSV_ROOT/bamstat/include
-cp htslib-1.3.1/libhts.a $NEXTSV_ROOT/bamstat/lib/libhts.a
-cp htslib-1.3.1/htslib/* $NEXTSV_ROOT/bamstat/include/
-
-echo "#### installation of bamstat ####"
-cd $NEXTSV_ROOT/bamstat
-make
-cp bamstat $NEXTSV_ROOT/bin
-
 echo "#### installation of Sniffles ####"
 cd $NEXTSV_ROOT/aligners_and_callers
-tar -xzf Sniffles-1.0.5.tar.gz
-cd Sniffles-1.0.5
-mkdir build 
-cd build
+sniffles_build_dir=$NEXTSV_ROOT/aligners_and_callers/Sniffles-1.0.5/build
+if [ -d "$sniffles_build_dir" ]
+then
+    echo "cleaning failed files"
+    rm -rf $sniffles_build_dir/*
+else
+    tar -xzf Sniffles-1.0.5.tar.gz
+    cd Sniffles-1.0.5
+    mkdir build 
+fi
+
+echo "building Sniffles"
+cd $sniffles_build_dir
 cmake ..
 make
-mv ../bin/sniffles-core-1.0.5/sniffles $NEXTSV_ROOT/bin
-
-echo "#### installation of ngmlr ####"
-cd $NEXTSV_ROOT/aligners_and_callers
-tar -xzf ngmlr-0.2.3.tar.gz
-cd ngmlr-0.2.3
-mkdir build
-cd build
-cmake ..
-make
-mv ../bin/ngmlr-0.2.3/ngmlr $NEXTSV_ROOT/bin
-
-
-echo "#### installation of bwa ####"
-cd $NEXTSV_ROOT/aligners_and_callers
-tar -xzf bwa-0.7.15.tar.gz
-cd bwa-0.7.15
-make
-mv bwa $NEXTSV_ROOT/bin
-
+mv ../bin/sniffles-core-1.0.5/sniffles $NEXTSV_ROOT/bin/
 
 echo "#### installation of PBHoney ####"
 cd $NEXTSV_ROOT/aligners_and_callers

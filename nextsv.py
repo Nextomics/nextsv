@@ -44,17 +44,24 @@ class Setting:
         self.ngmlr_sniffles_dir = None
         self.nextsv_out_dir = None
 
-        self.ref_bwa = None
+        self.ref_fasta = None
         self.ref_blasr = None
         self.ref_sa_blasr = None
-        self.bwa = None
-        self.ngmlr = None
+        self.ngmlr = os.path.join(self.root_dir, 'bin/ngmlr')
         self.samtools = None
-        self.sniffles = None
+        self.sniffles = os.path.join(self.root_dir, 'bin/sniffles')
         self.runtimekey = None 
         self.pbhoney = os.path.join(self.root_dir, 'aligners_and_callers/PBSuite_15.8.24/bin/Honey.py')
         self.blasr = os.path.join(self.root_dir, 'bin/blasr')
-      
+        self.format_pbhoney_spots = os.path.join(self.root_dir, 'bin/format_pbhoney_spots.pl')
+        self.format_pbhoney_tails = os.path.join(self.root_dir, 'bin/format_pbhoney_tails.pl')
+        self.format_sniffles_vcf = os.path.join(self.root_dir, 'bin/format_sniffles_vcf.pl')
+        self.merge2sv = os.path.join(self.root_dir, 'bin/merge2sv.pl') 
+        self.spots_file = None
+        self.tails_file = None
+        self.bwa_vcf_file = None
+        self.ngmlr_vcf_file = None
+
 
 class Task:
 
@@ -98,15 +105,149 @@ def main():
     if settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails:
         blasr_pbhoney_tasks = generate_tasks_blasr_pbhoney(settings)
 
-    if settings.mode == 'multiprocessing':
-        run_multiprocessing(settings)
-    elif settings.mode == 'sge':
-        run_sge(settings)
-       
-def run_multiprocessing(settings):
-    return 
+    run_alignment_and_svcalling(settings)
 
-def run_sge(settings):
+    merging_results(settings)
+
+def merging_results(settings):
+    merge_sh = os.path.join(settings.nextsv_out_dir, 'merge_calls.sh')
+    merge_sh_fp = open(merge_sh, 'w')
+    merge_sh_fp.write('#!/bin/bash\n\n')
+
+    ngmlr_sni_bed_file = dict()
+    bwa_sni_bed_file = dict()
+    spots_bed_file = dict()
+    tails_bed_file = dict()
+    honey_bed_file = dict()
+    sni_bed_file = dict()
+    nextsv_sensitive_file = dict()
+    nextsv_stringent_file = dict()
+    sv_type_list = ['DEL', 'INS']
+    if settings.enable_ngmlr_Sniffles:
+        input_vcf  = settings.ngmlr_vcf_file
+        prefix     = os.path.split(input_vcf)[1]
+        out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
+        cmd = formatting_sniffles_vcf(settings, input_vcf, out_prefix)
+        merge_sh_fp.write(cmd + endl)
+        for sv_type in sv_type_list:
+            ngmlr_sni_bed_file[sv_type] = out_prefix + '.%s.bed' % sv_type
+
+    if settings.enable_bwa_Sniffles:
+        input_vcf  = settings.bwa_vcf_file
+        prefix     = os.path.split(input_vcf)[1]
+        out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
+        cmd = formatting_sniffles_vcf(settings, input_vcf, out_prefix)
+        merge_sh_fp.write(cmd + endl)
+        for sv_type in sv_type_list:
+            bwa_sni_bed_file[sv_type] = out_prefix + '.%s.bed' % sv_type
+
+    if settings.enable_PBHoney_Spots: 
+        input_file = settings.spots_file
+        prefix     = os.path.split(input_vcf)[1]
+        out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
+        cmd = formatting_spots_file(settings, input_file, out_prefix)
+        merge_sh_fp.write(cmd + endl)
+        for sv_type in sv_type_list:
+            spots_bed_file[sv_type] = out_prefix + '.%s.bed' % sv_type
+
+    if settings.enable_PBHoney_Tails:
+        input_file = settings.tails_file
+        prefix     = os.path.split(input_vcf)[1]
+        out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
+        cmd = formatting_tails_file(settings, input_file, out_prefix)
+        merge_sh_fp.write(cmd + endl)
+        for sv_type in sv_type_list:
+            tails_bed_file[sv_type] = out_prefix + '.%s.bed' % sv_type
+
+    temp_file = dict()
+
+    for sv_type in sv_type_list:
+        nextsv_sensitive_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.nextsv_sensitive.%s.bed' % sv_type)
+        nextsv_stringent_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.nextsv_stringent.%s.bed' % sv_type)
+
+    if settings.enable_PBHoney_Spots and settings.enable_PBHoney_Tails and settings.enable_ngmlr_Sniffles:
+        sni_bed_file = ngmlr_sni_bed_file 
+        for sv_type in sv_type_list:
+            honey_bed_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.pbhoney.%s.bed' % sv_type) 
+            temp_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.tmp.%s.bed' % sv_type)
+            cmd = merge2sv_file(settings, spots_bed_file[sv_type], tails_bed_file[sv_type], temp_file[sv_type], honey_bed_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+            merge_sh_fp.write('rm %s\n' % temp_file[sv_type])
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+
+    elif settings.enable_PBHoney_Spots and settings.enable_PBHoney_Tails and settings.enable_bwa_Sniffles:
+        sni_bed_file = bwa_sni_bed_file 
+        for sv_type in sv_type_list:
+            honey_bed_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.pbhoney.%s.bed' % sv_type) 
+            temp_file[sv_type] = os.path.join(settings.nextsv_out_dir, settings.sample_name + '.tmp.%s.bed' % sv_type)
+            cmd = merge2sv_file(settings, spots_bed_file[sv_type], tails_bed_file[sv_type], temp_file[sv_type], honey_bed_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+            merge_sh_fp.write('rm %s\n' % temp_file[sv_type])
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+
+    elif settings.enable_PBHoney_Spots and settings.enable_ngmlr_Sniffles:
+        sni_bed_file = ngmlr_sni_bed_file 
+        honey_bed_file = spots_bed_file
+        for sv_type in sv_type_list:
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+
+    elif settings.enable_PBHoney_Spots and settings.enable_bwa_Sniffles:
+        sni_bed_file = bwa_sni_bed_file 
+        honey_bed_file = spots_bed_file
+        for sv_type in sv_type_list:
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+
+    elif settings.enable_PBHoney_Tails and settings.enable_ngmlr_Sniffles:
+        sni_bed_file = ngmlr_sni_bed_file 
+        honey_bed_file = tails_bed_file
+        for sv_type in sv_type_list:
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type], sv_type) 
+            merge_sh_fp.write(cmd + endl)
+
+    elif settings.enable_PBHoney_Tails and settings.enable_bwa_Sniffles:
+        sni_bed_file = bwa_sni_bed_file 
+        honey_bed_file = tails_bed_file
+        for sv_type in sv_type_list:
+            cmd = merge2sv_file(settings, sni_bed_file[sv_type], honey_bed_file[sv_type], nextsv_stringent_file[sv_type], nextsv_sensitive_file[sv_type]) 
+            merge_sh_fp.write(cmd + endl)
+
+    merge_sh_fp.close()
+    os.system('cd ' + settings.nextsv_out_dir)
+    if settings.mode == 'sge':
+        cmd = settings.job_submission_command + ' ' + merge_sh
+    else:
+        cmd += 'sh ' + merge_sh
+
+    print cmd
+    os.system(cmd + endl)
+
+    return
+
+def merge2sv_file(settings, bed1_file, bed2_file, out_intersect_bed_file, out_union_bed_file, sv_type):
+
+    cmd = settings.merge2sv + ' %s %s %s %s %s ' % (bed1_file, bed2_file, out_intersect_bed_file, out_union_bed_file, sv_type)
+    return cmd
+
+def formatting_tails_file(settings, input_file, out_prefix):
+
+    cmd = 'perl %s %s %s' % (settings.format_pbhoney_tails, input_file, out_prefix) 
+    return cmd
+
+def formatting_spots_file(settings, input_file, out_prefix):
+
+    cmd = 'perl %s %s %s' % (settings.format_pbhoney_spots, input_file, out_prefix) 
+    return cmd
+
+def formatting_sniffles_vcf(settings, input_vcf, out_prefix):
+
+    cmd = 'perl %s %s %s' % (settings.format_sniffles_vcf, input_vcf, out_prefix) 
+    return cmd
+
+def run_alignment_and_svcalling(settings):
 
     global all_task_list
     while 1:
@@ -158,7 +299,10 @@ def submit_task(settings, task):
     sh_file = task.sh_file
     sh_dir = os.path.split(sh_file)[0]
     submit_cmd = 'cd %s &&' % sh_dir 
-    submit_cmd += settings.job_submission_command + ' ' + task.sh_file 
+    if settings.mode == 'sge':
+        submit_cmd += settings.job_submission_command + ' ' + task.sh_file 
+    else:
+        submit_cmd += 'sh ' + task.sh_file 
     submit_cmd += ' && sleep 1s \n'
     task.status = 'submitted'
     os.system(submit_cmd)
@@ -245,6 +389,7 @@ def generate_tasks_blasr_pbhoney(settings):
 
     if settings.enable_PBHoney_Spots:
         svcall_file = os.path.join(sv_call_dir, '%s.spots' % (settings.sample_name))
+        settings.spots_file = svcall_file
         svcall_cmd = spots_cmd(settings, merge_bam, svcall_file) + endl 
         svcall_sh = os.path.join(sh_dir, 'blasr.%s.spots.sh'% settings.sample_name)
         svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [index_task_id]) 
@@ -255,6 +400,7 @@ def generate_tasks_blasr_pbhoney(settings):
 
     if settings.enable_PBHoney_Tails:
         svcall_file = os.path.join(sv_call_dir, '%s.tails' % (settings.sample_name))
+        settings.tails_file = svcall_file
         svcall_cmd = tails_cmd(settings, merge_bam, svcall_file) + endl 
         svcall_sh = os.path.join(sh_dir, 'blasr.%s.tails.sh'% settings.sample_name)
         svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [index_task_id]) 
@@ -319,7 +465,7 @@ def generate_tasks_bwa_sniffles(settings):
         bam_index_file = out_sort_bam_file + '.bai'
         sort_bam_list.append(out_sort_bam_file)
 
-        align_cmd = settings.bwa + ' mem -x pacbio -M -t %d %s %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_bwa, input_file, settings.samtools, out_bam_file)
+        align_cmd = settings.bwa + ' mem -x pacbio -M -t %d %s %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_fasta, input_file, settings.samtools, out_bam_file)
         sort_cmd = samtools_sort_cmd(settings.samtools, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, out_sort_bam_file) + endl
 
@@ -335,15 +481,11 @@ def generate_tasks_bwa_sniffles(settings):
         all_task_list.append(sort_task)
         all_task_list.append(index_task)
 
-        #align_tasks.append(align_task)
-        #sort_tasks.append(sort_task)
-        #index_tasks.append(index_task)
 
         generate_shell_file_from_task(settings, align_task)
         generate_shell_file_from_task(settings, sort_task)
         generate_shell_file_from_task(settings, index_task)
 
-    #merge_and_call_tasks = list()
 
     merge_bam = os.path.join(merge_bam_dir, 'bwa.%s.merge.bam' % settings.sample_name)
     merge_bam_cmd = samtools_merge_bam_cmd(settings.samtools, sort_bam_list, merge_bam)
@@ -351,7 +493,6 @@ def generate_tasks_bwa_sniffles(settings):
     merge_task = Task(task_id, merge_bam_cmd, merge_sh, merge_bam , 'UNK', merge_bam_dependent_task_list)
     all_task_list.append(merge_task)
     task_id += 1
-    #merge_and_call_tasks.append(merge_task)
 
     merge_bam_index_file = merge_bam + '.bai'
     index_merge_bam_cmd = samtools_index_cmd(settings.samtools, merge_bam)
@@ -359,21 +500,19 @@ def generate_tasks_bwa_sniffles(settings):
     index_task = Task(task_id, index_merge_bam_cmd, index_merge_bam_sh, merge_bam_index_file, 'UNK', [task_id-1])
     all_task_list.append(index_task)
     task_id += 1
-    #merge_and_call_tasks.append(index_task)
 
     svcall_file = os.path.join(sv_call_dir, '%s.bwa.sniffles.vcf' % (settings.sample_name))
+    settings.bwa_vcf_file = svcall_file
     svcall_cmd = sniffles_cmd(settings, merge_bam, svcall_file) 
     svcall_sh = os.path.join(sh_dir, 'bwa.%s.sniffles.sh'% settings.sample_name)
     svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [task_id-1]) 
     all_task_list.append(svcall_task)
     task_id += 1
-    #merge_and_call_tasks.append(svcall_task)
 
     generate_shell_file_from_task(settings, merge_task) 
     generate_shell_file_from_task(settings, index_task) 
     generate_shell_file_from_task(settings, svcall_task) 
 
-    #return (align_tasks, sort_tasks, index_tasks, merge_and_call_tasks)
     return
 
 
@@ -392,9 +531,6 @@ def generate_tasks_ngmlr_sniffles(settings):
     os.system('mkdir -p %s' % sv_call_dir)
     os.system('mkdir -p %s' % sh_dir)
 
-    #align_tasks = list()
-    #sort_tasks = list()
-    #index_tasks = list()
     sort_bam_list = list()
     merge_bam_dependent_task_list = list()
     for input_file in settings.input_list:
@@ -409,7 +545,7 @@ def generate_tasks_ngmlr_sniffles(settings):
         bam_index_file = out_sort_bam_file + '.bai'
         sort_bam_list.append(out_sort_bam_file)
 
-        align_cmd = settings.ngmlr + ' -t %d -r %s -q %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_bwa, input_file, settings.samtools, out_bam_file)
+        align_cmd = settings.ngmlr + ' -t %d -r %s -q %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_fasta, input_file, settings.samtools, out_bam_file)
         sort_cmd = samtools_sort_cmd(settings.samtools, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, out_sort_bam_file) + endl
 
@@ -424,16 +560,11 @@ def generate_tasks_ngmlr_sniffles(settings):
         all_task_list.append(align_task)
         all_task_list.append(sort_task)
         all_task_list.append(index_task)
-        #align_tasks.append(align_task)
-        #sort_tasks.append(sort_task)
-        #index_tasks.append(index_task)
 
         generate_shell_file_from_task(settings, align_task)
         generate_shell_file_from_task(settings, sort_task)
         generate_shell_file_from_task(settings, index_task)
 
-
-    #merge_and_call_tasks = list()
 
     merge_bam = os.path.join(merge_bam_dir, 'ngmlr.%s.merge.bam' % settings.sample_name)
     merge_bam_cmd = samtools_merge_bam_cmd(settings.samtools, sort_bam_list, merge_bam)
@@ -441,7 +572,6 @@ def generate_tasks_ngmlr_sniffles(settings):
     merge_task = Task(task_id, merge_bam_cmd, merge_sh, merge_bam , 'UNK', merge_bam_dependent_task_list)
     task_id += 1
     all_task_list.append(merge_task)
-    #merge_and_call_tasks.append(merge_task)
 
     merge_bam_index_file = merge_bam + '.bai'
     index_merge_bam_cmd = samtools_index_cmd(settings.samtools, merge_bam)
@@ -449,24 +579,20 @@ def generate_tasks_ngmlr_sniffles(settings):
     index_task = Task(task_id, index_merge_bam_cmd, index_merge_bam_sh, merge_bam_index_file, 'UNK', [task_id-1])
     task_id += 1
     all_task_list.append(index_task)
-    #merge_and_call_tasks.append(index_task)
 
     svcall_file = os.path.join(sv_call_dir, '%s.ngmlr.sniffles.vcf' % (settings.sample_name))
+    settings.ngmlr_vcf_file = svcall_file
     svcall_cmd = sniffles_cmd(settings, merge_bam, svcall_file) 
     svcall_sh = os.path.join(sh_dir, 'ngmlr.%s.sniffles.sh'% settings.sample_name)
     svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [task_id-1]) 
     task_id += 1
     all_task_list.append(svcall_task)
-    #merge_and_call_tasks.append(svcall_task)
 
     generate_shell_file_from_task(settings, merge_task) 
     generate_shell_file_from_task(settings, index_task) 
     generate_shell_file_from_task(settings, svcall_task) 
 
-    #return (align_tasks, sort_tasks, index_tasks, merge_and_call_tasks)
     return
-
-
 
 def sniffles_cmd(settings, input_bam, out_vcf): 
     
@@ -532,6 +658,9 @@ def creat_output_dirs(settings):
         settings.ngmlr_sniffles_dir = os.path.join(settings.out_dir, 'ngmlr_sniffles')
         os.system('mkdir -p %s' % settings.bwa_sniffles_dir)
 
+    settings.nextsv_out_dir = os.path.join(settings.out_dir, 'nextsv_results')
+    os.system('mkdir -p %s' % settings.nextsv_out_dir)
+
     return        
 
 def parse_config_file(config_file):
@@ -561,7 +690,7 @@ def parse_config_file(config_file):
         elif key == 'mode':
             settings.mode = value
         elif key == 'job_submission_command':
-            settings.job_submission_command = value
+            settings.job_submission_command = value.strip('[').strip(']')
         elif key == 'sample_name':
             settings.sample_name = value
         elif key == 'ref_blasr':
@@ -600,8 +729,8 @@ def parse_config_file(config_file):
             settings.sniffles = os.path.abspath(value)
         elif key == 'samtools':
             settings.samtools = os.path.abspath(value)
-        elif key == 'ref_bwa':
-            settings.ref_bwa = value
+        elif key == 'ref_fasta':
+            settings.ref_fasta = value
         elif key == 'ref_blasr':
             settings.ref_blasr = value
         elif key == 'ref_sa_blasr':
@@ -629,8 +758,8 @@ def parse_config_file(config_file):
     if (settings.enable_bwa_Sniffles or settings.enable_ngmlr_Sniffles) and settings.sniffles == None:
         myprint('ERROR! path to sniffles not specified') 
         sys.exit()
-    if settings.enable_bwa_Sniffles and settings.ref_bwa == None:
-        myprint('ERROR! ref_bwa (reference fasta file for bwa) not specified')
+    if settings.enable_bwa_Sniffles and settings.ref_fasta == None:
+        myprint('ERROR! ref_fasta (reference fasta file for bwa) not specified')
         sys.exit()
     if (settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails) and settings.ref_blasr == None:
         myprint('ERROR! ref_blasr (reference fasta file for blasr) not specified')
