@@ -1,4 +1,4 @@
-# NextSV: a computational pipeline for structrual variation detection from low coverage long-read sequencing.
+# NextSV: a meta-caller for structrual variation from low coverage long-read sequencing.
 
 NextSV, a meta SV caller and a computational pipeline to perform SV calling from low coverage long-read sequencing data. NextSV integrates three aligners and three SV callers and generates two integrated call sets (sensitive/stringent) for different analysis purpose. The output of NextSV is in ANNOVAR-compatible bed format. Users can easily perform downstream annotation using ANNOVAR and disease gene discovery using Phenolyzer.
 
