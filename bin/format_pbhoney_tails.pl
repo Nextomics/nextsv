@@ -1,20 +1,21 @@
 #!/usr/bin/perl
 use strict;
 
-my $usage  = "Usage:   perl $0 <in.tails>\n";
+my $usage  = "Usage:   perl $0 <in.tails> <out_prefix>\n";
 $usage    .= "Contact: Li Fang (fangli\@grandomics.com)\n";
 $usage    .= "Version: 0.4.0\n";
 
-die $usage if (@ARGV < 1);
+die $usage if (@ARGV < 2);
 
 my $min_length = 50;       # min sv length required for DEL and INV
 my $max_length = 10000000;  # max sv length required for DEL and INV
 
 my $in  = shift(@ARGV);
-my $del = "$in.DEL.bed";
-my $inv = "$in.INV.bed";
-my $tra = "$in.TRA.vcf";
-my $ins = "$in.INS.bed";
+my $out_perfix  = shift(@ARGV);
+my $del = "$out_perfix.DEL.bed";
+my $inv = "$out_perfix.INV.bed";
+my $tra = "$out_perfix.TRA.vcf";
+my $ins = "$out_perfix.INS.bed";
 
 open (IN,  $in ) or die $!;
 open (INS, "> $ins") or die $!;

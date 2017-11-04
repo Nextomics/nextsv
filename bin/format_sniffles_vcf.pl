@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 
-my $usage = "Usage:   perl $0 <in.sniffles.vcf>\n";
+my $usage = "Usage:   perl $0 <in.sniffles.vcf> <out_prefix>\n";
 $usage   .= "Contact: Li Fang (fangli\@grandomics.com)\n";
 $usage   .= "Version: 0.4.0\n";
 die $usage if (@ARGV < 1);
@@ -10,13 +10,12 @@ my $min_length = 50;        # min sv length for DEL, DUP and INV
 my $max_length = 10000000;   # max sv length for DEL, DUP and INV
 my $min_read_supp = 2;
 my $in = shift(@ARGV);
-$in =~ /(.*).vcf$/;
-my $in_prefix = $1;
-my $out1 = "$in.INS.bed";
-my $out2 = "$in.DEL.bed";
-my $out3 = "$in.INV.bed";
-my $out4 = "$in_prefix.TRA.vcf";   # not bed format
-my $out5 = "$in.DUP.bed";
+my $out_prefix = shift(@ARGV);
+my $out1 = "$out_prefix.INS.bed";
+my $out2 = "$out_prefix.DEL.bed";
+my $out3 = "$out_prefix.INV.bed";
+my $out4 = "$out_prefix.TRA.vcf";   # not bed format
+my $out5 = "$out_prefix.DUP.bed";
 
 open (IN, $in) or die $!;
 open (INS, "> $out1") or die $!;

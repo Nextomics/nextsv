@@ -1,18 +1,19 @@
 #!/usr/bin/perl
 use strict;
 
-my $usage  = "Usage:   perl $0 <in.spots>\n";
+my $usage  = "Usage:   perl $0 <in.spots> <out_prefix>\n";
 $usage    .= "Contact: Li Fang (fangli\@grandomics.com)\n";
 $usage    .= "Version: 0.4.0\n";
 
-die $usage if (@ARGV < 1);
+die $usage if (@ARGV < 2);
 
 my $min_length = 50;     # min sv length for output
 my $max_length = 10000000; # max sv length for output
 
 my $in = shift(@ARGV);
-my $out1 = "$in.INS.bed"; # insertion calls in bed format
-my $out2 = "$in.DEL.bed"; # deletion calls in bed format
+my $out_prefix = shift(@ARGV);
+my $out1 = "$out_prefix.INS.bed"; # insertion calls in bed format
+my $out2 = "$out_prefix.DEL.bed"; # deletion calls in bed format
 
 my %hash = ("1" => 1, "2" => 1, "3" => 1, "4" => 1, "5" => 1, "6" => 1, "7" => 1, "8" => 1, "9" => 1, "10" => 1, "11" => 1, "12" => 1, "13" => 1, "14" => 1, "15" => 1, "16" => 1, "17" => 1, "18" => 1, "19" => 1, "20" => 1, "21" => 1, "22" => 1, "X" => 1, "Y" => 1, "MT" => 1, "chr1" => 1, "chr2" => 1, "chr3" => 1, "chr4" => 1, "chr5" => 1, "chr6" => 1, "chr7" => 1, "chr8" => 1, "chr9" => 1, "chr10" => 1, "chr11" => 1, "chr12" => 1, "chr13" => 1, "chr14" => 1, "chr15" => 1, "chr16" => 1, "chr17" => 1, "chr18" => 1, "chr19" => 1, "chr20" => 1, "chr21" => 1, "chr22" => 1, "chrX" => 1, "chrY" => 1, "chrMT" => 1); 
 
