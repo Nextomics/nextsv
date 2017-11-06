@@ -21,6 +21,7 @@ PBHoney, Sniffles
 Prerequisites:
    
 zlib-dev, cmake, gcc/g++(>=4.8.2), pip
+Python packages: argparse, pysam, networkx, h5py, PyIntervalTree
 
 Downloading NextSV: 
 
@@ -31,10 +32,15 @@ git clone https://github.com/Nextomics/nextsv.git
 Installation:
 ```
 cd nextsv/
+pip install --user argparse
+pip install --user pysam
+pip install --user networkx
+pip install --user h5py
+pip install --user PyIntervalTree
+
 sh install.sh
 cp ~/.bashrc  ~/.bashrc.bak
 cat setup-env.sh >> ~/.bashrc
-
 ```
 
 ## Usage
