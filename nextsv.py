@@ -386,13 +386,13 @@ def merging_results(settings):
             merge_sh_fp.write(cmd + endl)
 
     merge_sh_fp.close()
-    os.system('cd ' + settings.nextsv_out_dir)
+
+    cmd = 'cd %s && ' % settings.nextsv_out_dir
     if settings.mode == 'sge':
-        cmd = settings.job_submission_command + ' ' + merge_sh
+        cmd += settings.job_submission_command + ' ' + merge_sh
     else:
         cmd += 'sh ' + merge_sh
 
-    print cmd
     os.system(cmd + endl)
 
     return
