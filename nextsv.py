@@ -20,10 +20,12 @@ class Setting:
         self.bin_dir = os.path.join(self.root_dir, 'bin')
         self.input_file_list = None
         self.input_list = list()
+        self.input_file_format = None
         self.out_dir = None
         self.n_thread = 1
         self.sample_name = None
         self.job_submission_command = None
+        self.wait_time = 30
 
         self.enable_PBHoney_Spots = 1
         self.spots_threshold = 3
@@ -44,12 +46,17 @@ class Setting:
         self.ngmlr_sniffles_dir = None
         self.nextsv_out_dir = None
 
+        self.bash5_minLength = None
+        self.bash5_minReadScore = None
+        self.extract_fastq_dir = None
+
         self.ref_fasta = None
         self.ref_blasr = None
         self.ref_sa_blasr = None
         self.ngmlr = os.path.join(self.root_dir, 'bin/ngmlr')
         self.samtools = None
         self.sniffles = os.path.join(self.root_dir, 'bin/sniffles')
+        self.bash5tools = None
         self.runtimekey = None 
         self.pbhoney = os.path.join(self.root_dir, 'aligners_and_callers/PBSuite_15.8.24/bin/Honey.py')
         self.blasr = os.path.join(self.root_dir, 'bin/blasr')
@@ -85,7 +92,6 @@ def main():
 
     global all_task_list
     global task_id 
-    task_id = task_id 
 
     config_file = sys.argv[1]
     settings = parse_config_file(config_file)
@@ -95,6 +101,9 @@ def main():
     creat_output_dirs(settings)
     check_samtools_version(settings)
     settings.input_list = read_input_files(settings.input_file_list) 
+    check_input_file_format(settings)
+
+    extract_fastq_from_rawdata(settings)
 
     ngmlr_sniffles_tasks = None
     bwa_sniffles_tasks = None
@@ -113,6 +122,109 @@ def main():
 
     merging_results(settings)
 
+def extract_fastq_from_rawdata(settings):
+
+    settings.extract_fastq_dir = os.path.join(settings.out_dir, 'fastq')
+    os.system('mkdir -p ' + settings.extract_fastq_dir)
+
+    if settings.input_file_format == 'hdf5':
+        extract_fastq_from_hdf5(settings)
+    elif settings.input_file_format == 'bam':
+        extract_fastq_from_bam(settings)
+    return
+
+def extract_fastq_from_bam(settings):
+    extract_fastq_sh_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.sh')
+    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.done' % settings.runtimekey)
+    extract_fastq_sh_fp = open(extract_fastq_sh_file, 'w') 
+    extract_fastq_sh_fp.write('#!/bin/bash\n\n')
+    bam_list = settings.input_list
+    fastq_list = list()
+    for input_bam_file in bam_list:
+        bam_prefix = get_file_prefix(input_bam_file)
+        out_fastq_file = os.path.join(settings.extract_fastq_dir, bam_prefix + '.fastq')
+        cmd = bam2fastq(settings, input_bam_file, out_fastq_file)
+        extract_fastq_sh_fp.write(cmd + endl)
+         
+    extract_fastq_sh_fp.write('touch %s' % extract_done_file + endl)
+    extract_fastq_sh_fp.close() 
+    extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
+    submit_task(settings, extract_fastq_task)
+    wait_outputfile(settings, extract_done_file)
+    settings.input_list = fastq_list
+
+    return
+
+def bam2fastq(settings, input_bam_file, out_fastq_file):
+
+    cmd = '%s fastq %s > %s' % (settings.samtools, input_bam_file, out_fastq_file)
+    return cmd
+
+def extract_fastq_from_hdf5(settings):
+    extract_fastq_sh_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.sh')
+    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.done' % settings.runtimekey)
+    extract_fastq_sh_fp = open(extract_fastq_sh_file, 'w') 
+    extract_fastq_sh_fp.write('#!/bin/bash\n\n')
+    fastq_list = list() 
+    hdf5_file_list = settings.input_list
+
+    for hdf5_file in hdf5_file_list:
+        hdf5_prefix = get_file_prefix(hdf5_file)
+        hdf5_prefix = hdf5_prefix.rstrip('.h5')
+        hdf5_prefix = hdf5_prefix.rstrip('.hdf5')
+        hdf5_prefix = hdf5_prefix.rstrip('bas')
+        hdf5_prefix = hdf5_prefix.rstrip('bax')
+        out_fastq_prefix = os.path.join(settings.extract_fastq_dir, hdf5_prefix)
+        out_fastq = out_fastq_prefix + '.fastq'
+        fastq_list.append(out_fastq)
+        cmd = hdf5tofastq(settings, hdf5_file, outfastq_prefix)
+        extract_fastq_sh_fp.write(cmd + endl)
+
+    extract_fastq_sh_fp.write('touch %s' % extract_done_file + endl)
+    extract_fastq_sh_fp.close() 
+    extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
+    submit_task(settings, extract_fastq_task)
+    wait_outputfile(settings, extract_done_file)
+    settings.input_list = fastq_list
+
+    return
+    
+
+def wait_outputfile(settings, target_file):
+
+    while 1:
+        time.sleep(settings.wait_time)
+        if os.path.exists(target_file): break
+
+    return
+
+
+def hdf5tofastq(settings, hdf5_file, outfastq_prefix):
+    
+    cmd = '%s --readType subreads --outType fastq --minLength %d --minReadScore %f --outFilePrefix %s %s ' % (settings.bash5tools, settings.bash5_minLength, settings.bash5_minReadScore, outfastq_prefix, hdf5_file) 
+    return cmd
+
+def check_input_file_format(settings):
+
+    input_file = settings.input_list[0]
+    input_file_ext = os.path.splitext(input_file)[1].lower()
+    if input_file_ext == '.hdf5' or input_file_ext == '.h5': 
+        settings.input_file_format = 'hdf5'
+    elif input_file_ext == '.bam':
+        settings.input_file_format = 'bam'
+    elif input_file_ext == '.sam':
+        settings.input_file_format = 'sam'
+    elif input_file_ext == '.fasta' or input_file_ext == '.fa':
+        settings.input_file_format = 'fasta'
+    elif input_file_ext == '.fastq' or input_file_ext == '.fq':
+        settings.input_file_format = 'fastq'
+    else:
+        settings.input_file_format = 'UNK'
+        myprint ('ERROR! input files can only be fastq, fasta, or hdf5')
+        sys.exit()
+
+    return
+    
 def check_samtools_version(settings):
 
     tmp_file = os.path.join(settings.out_dir, '.samtools_tmp')
@@ -285,7 +397,7 @@ def run_alignment_and_svcalling(settings):
             unfinished_task_cnt += check_task_status(settings, i)
 
         if unfinished_task_cnt == 0: break
-        time.sleep(5) 
+        time.sleep(settings.wait_time) 
 
     print 'all job finished'
     return 
@@ -346,10 +458,6 @@ def generate_tasks_blasr_pbhoney(settings):
     os.system('mkdir -p %s' % sv_call_dir)
     os.system('mkdir -p %s' % sh_dir)
     
-    #align_tasks = list()
-    #sort_tasks = list()
-    #index_tasks = list()
-
     sort_bam_list = list()
     merge_bam_dependent_task_list = list()
 
@@ -381,22 +489,17 @@ def generate_tasks_blasr_pbhoney(settings):
         all_task_list.append(align_task)
         all_task_list.append(sort_task)
         all_task_list.append(index_task)
-        #align_tasks.append(align_task)
-        #sort_tasks.append(sort_task)
-        #index_tasks.append(index_task)
 
         generate_shell_file_from_task(settings, align_task)
         generate_shell_file_from_task(settings, sort_task)
         generate_shell_file_from_task(settings, index_task)
         
-    #merge_and_call_tasks = list()
 
     merge_bam = os.path.join(merge_bam_dir, 'blasr.%s.merge.bam' % settings.sample_name)
     merge_bam_cmd = samtools_merge_bam_cmd(settings.samtools, sort_bam_list, merge_bam)
     merge_sh = os.path.join(sh_dir, 'blasr.%s.merge_bam.sh' % settings.sample_name)
     merge_task = Task(task_id, merge_bam_cmd, merge_sh, merge_bam , 'UNK', merge_bam_dependent_task_list)
     all_task_list.append(merge_task)
-    #merge_and_call_tasks.append(merge_task)
     task_id += 1 
 
     merge_bam_index_file = merge_bam + '.bai'
@@ -404,7 +507,6 @@ def generate_tasks_blasr_pbhoney(settings):
     index_merge_bam_sh = os.path.join(sh_dir, 'blasr.%s.index.sh' % settings.sample_name) 
     index_task = Task(task_id, index_merge_bam_cmd, index_merge_bam_sh, merge_bam_index_file, 'UNK', [task_id-1])
     all_task_list.append(index_task)
-    #merge_and_call_tasks.append(index_task)
     index_task_id = task_id
     task_id += 1 
 
@@ -419,7 +521,6 @@ def generate_tasks_blasr_pbhoney(settings):
         svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [index_task_id]) 
         all_task_list.append(svcall_task)
         task_id += 1 
-        #merge_and_call_tasks.append(svcall_task)
         generate_shell_file_from_task(settings, svcall_task) 
 
     if settings.enable_PBHoney_Tails:
@@ -429,7 +530,6 @@ def generate_tasks_blasr_pbhoney(settings):
         svcall_sh = os.path.join(sh_dir, 'blasr.%s.tails.sh'% settings.sample_name)
         svcall_task = Task(task_id, svcall_cmd, svcall_sh, svcall_file, 'UNK', [index_task_id]) 
         all_task_list.append(svcall_task)
-        #merge_and_call_tasks.append(svcall_task)
         generate_shell_file_from_task(settings, svcall_task) 
         task_id += 1 
 
@@ -757,6 +857,12 @@ def parse_config_file(config_file):
             settings.sniffles = os.path.abspath(value)
         elif key == 'samtools':
             settings.samtools = os.path.abspath(value)
+        elif key == 'bash5tools':
+            settings.bash5tools = os.path.abspath(value)
+        elif key == 'minLength':
+            settings.bash5_minLength = int(value)
+        elif key == 'minReadScore':
+            settings.bash5_minReadScore = float(value)
         elif key == 'ref_fasta':
             settings.ref_fasta = value
         elif key == 'ref_blasr':
