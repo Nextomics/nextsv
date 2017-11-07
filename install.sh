@@ -6,7 +6,7 @@ mkdir -p bin
 
 echo "#### installation of Sniffles ####"
 cd $NEXTSV_ROOT/aligners_and_callers
-sniffles_build_dir=$NEXTSV_ROOT/aligners_and_callers/Sniffles-1.0.5/build
+sniffles_build_dir=$NEXTSV_ROOT/aligners_and_callers/Sniffles-1.0.5/build/
 if [ -d "$sniffles_build_dir" ]
 then
     echo "cleaning failed files"
@@ -23,14 +23,15 @@ cmake ..
 make
 mv ../bin/sniffles-core-1.0.5/sniffles $NEXTSV_ROOT/bin/
 
+if [ -f "$NEXTSV_ROOT/bin/sniffles" ]
+then
+	echo "Installation of Sniffles finished"
+else
+	echo "Installation of Sniffles failed"
+fi
+
 echo "#### installation of PBHoney ####"
 cd $NEXTSV_ROOT/aligners_and_callers
-pip install --user argparse
-pip install --user pysam
-pip install --user networkx
-pip install --user h5py
-pip install --user PyIntervalTree
-
 tar -xzf PBSuite_15.8.24.tgz
 cd PBSuite_15.8.24
 echo "
@@ -40,8 +41,8 @@ export PATH=\$PATH:\$SWEETPATH/bin
 " > $NEXTSV_ROOT/setup-env.sh
 cd $NEXTSV_ROOT
 
-echo "#### installation of PBHoney ####"
 mv $NEXTSV_ROOT/aligners_and_callers/blasr $NEXTSV_ROOT/bin/blasr
+mv $NEXTSV_ROOT/aligners_and_callers/ngmlr $NEXTSV_ROOT/bin/ngmlr
 
 echo "
 ########################################################################
@@ -56,4 +57,3 @@ export PATH=\$PATH:\$SWEETPATH/bin
 
 "
 
-echo "Installation finished"
