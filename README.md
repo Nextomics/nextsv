@@ -55,7 +55,7 @@ A template config file can be found in example.config. The following parameters 
 
 `sample_name`: sample name. It will be a part of the prefix of the output files. 
 
-`input_file_list`: path to a file that contains names of input files(fastq/fasta). Each line contains one input file. Examples of input file list can be found in `example.fastq.fofn`
+`input_file_list`: path to a file that contains names of input files. Each line contains one input file. Examples of input file list can be found in `example.fastq.fofn`. 
 
 `out_dir`: full path to output directory
 
@@ -71,7 +71,7 @@ A template config file can be found in example.config. The following parameters 
 
 `spots_minErrReads`: minimal supporting reads for PBHoney-Spots (default=2)
 
-`spots_consensus`:method for polishing consensus for PBHoney-Spots(pbdagcon or None, default=None)
+`spots_consensus`: method for polishing consensus for PBHoney-Spots(pbdagcon or None, default=None)
 
 
 `enable_PBHoney_Tails`: whether to enable SV calling using PBHoney-Tails (1 for enable, 0 for disable)

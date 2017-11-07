@@ -46,8 +46,8 @@ class Setting:
         self.ngmlr_sniffles_dir = None
         self.nextsv_out_dir = None
 
-        self.bash5_minLength = None
-        self.bash5_minReadScore = None
+        self.bash5_minLength = 500
+        self.bash5_minReadScore = 0.75
         self.extract_fastq_dir = None
 
         self.ref_fasta = None
