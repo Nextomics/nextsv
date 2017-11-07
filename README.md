@@ -37,10 +37,9 @@ pip install --user pysam
 pip install --user networkx
 pip install --user h5py
 pip install --user PyIntervalTree
+sh install_pbhoney.sh
 
-sh install.sh
-cp ~/.bashrc  ~/.bashrc.bak
-cat setup-env.sh >> ~/.bashrc
+sh install_sniffles.sh # if you have sniffles installed on your system, you can skip this step and specify the path to sniffles in the config file
 ```
 
 ## Usage
