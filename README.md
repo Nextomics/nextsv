@@ -97,7 +97,7 @@ A template config file can be found in example.config. The following parameters 
 
 `sniffles`: full path to sniffles binary file
 
-`samtools`: full path to samtools binary file (version >= 1.3)
+`samtools`: full path to samtools binary file
 
 `ref_fasta`: full path to reference genome fasta file (for BWA and NGMLR aligners. If `enable_bwa_Sniffles=1` is specified, the fasta file should be pre-indexed by BWA. If `enable_bwa_Sniffles=0` is specified, the fasta file does not need to be pre-indexed)
 
