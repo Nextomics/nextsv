@@ -135,7 +135,7 @@ def extract_fastq_from_rawdata(settings):
 
 def extract_fastq_from_bam(settings):
     extract_fastq_sh_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.sh')
-    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.done' % settings.runtimekey)
+    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.finished' % settings.runtimekey)
     extract_fastq_sh_fp = open(extract_fastq_sh_file, 'w') 
     extract_fastq_sh_fp.write('#!/bin/bash\n\n')
     bam_list = settings.input_list
@@ -162,7 +162,7 @@ def extract_fastq_from_bam(settings):
 
     extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
     submit_task(settings, extract_fastq_task)
-    wait_outputfile(settings, extract_done_file)
+    wait_outputfile(settings, fastq_list + [extract_done_file])
     settings.input_list = fastq_list
 
     return
@@ -174,7 +174,7 @@ def bam2fastq(settings, input_bam_file, out_fastq_file):
 
 def extract_fastq_from_hdf5(settings):
     extract_fastq_sh_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.sh')
-    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.done' % settings.runtimekey)
+    extract_done_file = os.path.join(settings.extract_fastq_dir, 'extract_fastq.%s.finished' % settings.runtimekey)
     extract_fastq_sh_fp = open(extract_fastq_sh_file, 'w') 
     extract_fastq_sh_fp.write('#!/bin/bash\n\n')
     fastq_list = list() 
@@ -186,10 +186,11 @@ def extract_fastq_from_hdf5(settings):
         hdf5_prefix = hdf5_prefix.rstrip('.hdf5')
         hdf5_prefix = hdf5_prefix.rstrip('bas')
         hdf5_prefix = hdf5_prefix.rstrip('bax')
+        hdf5_prefix = hdf5_prefix.rstrip('.')
         out_fastq_prefix = os.path.join(settings.extract_fastq_dir, hdf5_prefix)
         out_fastq = out_fastq_prefix + '.fastq'
         fastq_list.append(out_fastq)
-        cmd = hdf5tofastq(settings, hdf5_file, outfastq_prefix)
+        cmd = hdf5tofastq(settings, hdf5_file, out_fastq_prefix)
         extract_fastq_sh_fp.write(cmd + endl)
 
     extract_fastq_sh_fp.write('touch %s' % extract_done_file + endl)
@@ -207,24 +208,34 @@ def extract_fastq_from_hdf5(settings):
 
     extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
     submit_task(settings, extract_fastq_task)
-    wait_outputfile(settings, extract_done_file)
+    wait_outputfile(settings, fastq_list + [extract_done_file])
     settings.input_list = fastq_list
 
     return
     
 
-def wait_outputfile(settings, target_file):
+def wait_outputfile(settings, output_file_list):
 
     while 1:
         time.sleep(settings.wait_time)
-        if os.path.exists(target_file): break
+        output_file_exist = True
+        for output_file in output_file_list:
+            if os.path.exists(output_file) == False:
+                output_file_exist = False
+                break
+        if output_file_exist == True:
+            break
 
     return
 
 
-def hdf5tofastq(settings, hdf5_file, outfastq_prefix):
+def hdf5tofastq(settings, hdf5_file, out_fastq_prefix):
     
-    cmd = '%s --readType subreads --outType fastq --minLength %d --minReadScore %f --outFilePrefix %s %s ' % (settings.bash5tools, settings.bash5_minLength, settings.bash5_minReadScore, outfastq_prefix, hdf5_file) 
+    if settings.bash5tools == None or os.path.exists(settings.bash5tools) == False:
+        myprint('ERROR! bash5tools.py not specified or does not exist!')
+        sys.exit()
+
+    cmd = 'python %s --readType subreads --outType fastq --minLength %d --minReadScore %f --outFilePrefix %s %s ' % (settings.bash5tools, settings.bash5_minLength, settings.bash5_minReadScore, out_fastq_prefix, hdf5_file) 
     return cmd
 
 def check_input_file_format(settings):
