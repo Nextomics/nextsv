@@ -55,7 +55,7 @@ A template config file can be found in example.config. The following parameters 
 
 `sample_name`: sample name. It will be a part of the prefix of the output files. 
 
-`input_file_list`: path to a file that contains names of input files. Each line contains one input file. Examples of input file list can be found in `example.fastq.fofn`. 
+`input_file_list`: path to a file that contains names of input files. Each line contains one input file. Examples of input file list can be found in `example.fastq.fofn`. Input files can be fastq, fasta, bam or hdf5 files. If the input files are bam or hdf5 files, NextSV will extract fastq from bam or hdf5 files. If the input files are hdf5 files, path to bash5tools.py should be specifed (see `bash5tools` below).
 
 `out_dir`: full path to output directory
 
