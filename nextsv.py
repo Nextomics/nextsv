@@ -143,11 +143,23 @@ def extract_fastq_from_bam(settings):
     for input_bam_file in bam_list:
         bam_prefix = get_file_prefix(input_bam_file)
         out_fastq_file = os.path.join(settings.extract_fastq_dir, bam_prefix + '.fastq')
+        fastq_list.append(out_fastq_file)
         cmd = bam2fastq(settings, input_bam_file, out_fastq_file)
         extract_fastq_sh_fp.write(cmd + endl)
          
     extract_fastq_sh_fp.write('touch %s' % extract_done_file + endl)
     extract_fastq_sh_fp.close() 
+
+    all_fastq_file_exists = True
+    for fastq_file in fastq_list:
+        if os.path.exists(fastq_file) == False: 
+            all_fastq_file_exists = False
+            break
+    if all_fastq_file_exists: 
+        settings.input_list = fastq_list
+        myprint ('extracted FASTQ files existed, skipped extracting FASTQ files from bam files')
+        return
+
     extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
     submit_task(settings, extract_fastq_task)
     wait_outputfile(settings, extract_done_file)
@@ -182,6 +194,17 @@ def extract_fastq_from_hdf5(settings):
 
     extract_fastq_sh_fp.write('touch %s' % extract_done_file + endl)
     extract_fastq_sh_fp.close() 
+
+    all_fastq_file_exists = True
+    for fastq_file in fastq_list:
+        if os.path.exists(fastq_file) == False: 
+            all_fastq_file_exists = False
+            break
+    if all_fastq_file_exists: 
+        settings.input_list = fastq_list
+        myprint ('extracted FASTQ files existed, skipped extracting FASTQ files from hdf files')
+        return
+
     extract_fastq_task = Task(0, cmd, extract_fastq_sh_file, extract_done_file, 'UNK', list()) 
     submit_task(settings, extract_fastq_task)
     wait_outputfile(settings, extract_done_file)
@@ -745,12 +768,12 @@ def samtools_index_cmd(samtools, sort_bam):
     cmd = '%s index %s' % (samtools, sort_bam)
     return  cmd
 
-def samtools_sort_cmd(settings, samtools, input_bam, output_bam, n_thread):
+def samtools_sort_cmd(settings, input_bam, output_bam, n_thread):
 
     if settings.samtools_version  == 'new':
-        cmd = '%s sort -@ %d -o %s %s' % (samtools.samtools, n_thread, output_bam, input_bam) 
+        cmd = '%s sort -@ %d -o %s %s' % (settings.samtools, n_thread, output_bam, input_bam) 
     else:
-        cmd = '%s sort -@ %d -f %s %s' % (samtools.samtools, n_thread, input_bam, output_bam)
+        cmd = '%s sort -@ %d -f %s %s' % (settings.samtools, n_thread, input_bam, output_bam)
 
     return cmd
 
