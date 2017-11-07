@@ -103,7 +103,7 @@ A template config file can be found in example.config. The following parameters 
 
 `minReadScore`: minReadScore for extracting fastq from hdf5 file (default: 0.75).
 
-`samtools`: full path to samtools binary file, , required
+`samtools`: full path to samtools binary file (version >=1.3), required
 
 `ref_fasta`: full path to reference genome fasta file (for BWA and NGMLR aligners. If `enable_bwa_Sniffles=1` is specified, the fasta file should be pre-indexed by BWA. If `enable_bwa_Sniffles=0` is specified, the fasta file does not need to be pre-indexed)
 
