@@ -97,7 +97,7 @@ A template config file can be found in example.config. The following parameters 
 
 `sniffles`: full path to sniffles binary file
 
-`bash5tools`: full path to installed bash5tools.py on your system, required if your input files are in hdf5 format. This is for extracting fastq from hdf5 files.
+`bash5tools`: full path to installed bash5tools.py on your system, required if your input files are in hdf5 format. This is for extracting fastq from hdf5 files. NextSV currently support pbh5tools (bash5tools.py) version 0.8.0
 
 `minLength`: minimal subread length for extracting fastq from hdf5 file (default: 500). 
 
