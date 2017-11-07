@@ -61,7 +61,7 @@ A template config file can be found in example.config. The following parameters 
 
 `n_thread`: number of threads (CPU cores)
 
-`mode`: running mode of NextSV. NextSV currently supports three modes: 'multiprocessing', 'sge' or 'scripts_only'. `mode=multiprocessing` means that NextSV will run in parallel using multiple cores (equal to `n_thread`) on a single machine. `mode=sge` means that NextSV will submit the jobs to the SGE (Sun Grid Engine) cluster. If `mode=sge` is specified, users need to provide the submission command with parameters (`job_submission_command`). `mode=scripts_only` means that NextSV will only generate the shell scripts, users can submit the shell scripts to the cluster by hand.
+`mode`: running mode of NextSV. NextSV currently supports two modes: multiprocessing or sge. `mode=multiprocessing` means that NextSV will run in parallel using multiple cores (equal to `n_thread`) on a single machine. `mode=sge` means that NextSV will submit the jobs to the SGE (Sun Grid Engine) cluster. If `mode=sge` is specified, users need to provide the submission command with parameters (`job_submission_command`).
 
 `job_submission_command`: job submission command with parameters. Please specify number of threads in the parameters. For example, `job_submission_command=[qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12]` means that the job will be submitted using qsub and the parameters for qsub is "-V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12", which means the job will use 12 threads and 4G memory for each thread. NextSV will copy this command while submitting the shell script file. 
 
@@ -91,13 +91,19 @@ A template config file can be found in example.config. The following parameters 
 
 `sniffles_max_distance`:maximum distance to group SV together by Sniffles (default=600)
 
-`bwa`: full path to bwa binary file
+`bwa`: full path to bwa binary file, required
 
 `ngmlr`: full path to ngmlr binary file
 
 `sniffles`: full path to sniffles binary file
 
-`samtools`: full path to samtools binary file
+`bash5tools`: full path to installed bash5tools.py on your system, required if your input files are in hdf5 format. This is for extracting fastq from hdf5 files.
+
+`minLength`: minimal subread length for extracting fastq from hdf5 file (default: 500). 
+
+`minReadScore`: minReadScore for extracting fastq from hdf5 file (default: 0.75).
+
+`samtools`: full path to samtools binary file, , required
 
 `ref_fasta`: full path to reference genome fasta file (for BWA and NGMLR aligners. If `enable_bwa_Sniffles=1` is specified, the fasta file should be pre-indexed by BWA. If `enable_bwa_Sniffles=0` is specified, the fasta file does not need to be pre-indexed)
 
