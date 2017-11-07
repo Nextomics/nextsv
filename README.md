@@ -91,13 +91,19 @@ A template config file can be found in example.config. The following parameters 
 
 `sniffles_max_distance`:maximum distance to group SV together by Sniffles (default=600)
 
-`bwa`: full path to bwa binary file
+`bwa`: full path to bwa binary file, required
 
 `ngmlr`: full path to ngmlr binary file
 
 `sniffles`: full path to sniffles binary file
 
-`samtools`: full path to samtools binary file
+`bash5tools`: full path to installed bash5tools.py on your system, required if your input files are in hdf5 format. This is for extracting fastq from hdf5 files.
+
+`minLength`: minimal subread length for extracting fastq from hdf5 file (default: 500). 
+
+`minReadScore`: minReadScore for extracting fastq from hdf5 file (default: 0.75).
+
+`samtools`: full path to samtools binary file, , required
 
 `ref_fasta`: full path to reference genome fasta file (for BWA and NGMLR aligners. If `enable_bwa_Sniffles=1` is specified, the fasta file should be pre-indexed by BWA. If `enable_bwa_Sniffles=0` is specified, the fasta file does not need to be pre-indexed)
 
