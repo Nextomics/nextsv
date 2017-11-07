@@ -61,6 +61,7 @@ class Setting:
         self.tails_file = None
         self.bwa_vcf_file = None
         self.ngmlr_vcf_file = None
+        self.samtools_version = None
 
 
 class Task:
@@ -90,8 +91,11 @@ def main():
     settings = parse_config_file(config_file)
     random.seed()
     settings.runtimekey = random.randint(10000000000, 99999999999)
-    settings.input_list = read_input_files(settings.input_file_list) 
+
     creat_output_dirs(settings)
+    check_samtools_version(settings)
+    settings.input_list = read_input_files(settings.input_file_list) 
+
     ngmlr_sniffles_tasks = None
     bwa_sniffles_tasks = None
     blasr_pbhoney_tasks = None
@@ -108,6 +112,26 @@ def main():
     run_alignment_and_svcalling(settings)
 
     merging_results(settings)
+
+def check_samtools_version(settings):
+
+    tmp_file = os.path.join(settings.out_dir, '.samtools_tmp')
+    tmp_fp = open(tmp_file, 'w')
+    tmp_fp.close()
+
+    cmd = '%s sort &>> %s ' % (settings.samtools, tmp_file) 
+    os.system(cmd)
+    tmp_fp = open(tmp_file, 'r')
+    lines = list(tmp_fp)
+    tmp_fp.close()
+    target_str = " -f "
+    settings.samtools_version = 'new'
+    for line in lines:
+        if line.find(target_str) >= 0:
+            settings.samtools_version = 'old'
+            break 
+    os.system ('rm %s' % tmp_file)
+    return
 
 def merging_results(settings):
     merge_sh = os.path.join(settings.nextsv_out_dir, 'merge_calls.sh')
@@ -343,7 +367,7 @@ def generate_tasks_blasr_pbhoney(settings):
         bam_index_file = tails_sort_bam_file + '.bai'
 
         align_cmd = blasr_align_cmd(settings, input_file, blasr_sam_file) + ' && ' + tails_align_cmd(settings, blasr_sam_file, tails_sam_file, tails_bam_file) + endl    
-        sort_cmd = samtools_sort_cmd(settings.samtools, tails_bam_file, tails_sort_bam_file, settings.n_thread) + endl
+        sort_cmd = samtools_sort_cmd(settings, tails_bam_file, tails_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, tails_sort_bam_file) + endl
 
         align_task = Task(task_id, align_cmd, align_sh_file, tails_bam_file, 'UNK', list())
@@ -466,7 +490,7 @@ def generate_tasks_bwa_sniffles(settings):
         sort_bam_list.append(out_sort_bam_file)
 
         align_cmd = settings.bwa + ' mem -x pacbio -M -t %d %s %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_fasta, input_file, settings.samtools, out_bam_file)
-        sort_cmd = samtools_sort_cmd(settings.samtools, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
+        sort_cmd = samtools_sort_cmd(settings, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, out_sort_bam_file) + endl
 
         align_task = Task(task_id, align_cmd, align_sh_file, out_bam_file, 'UNK', list())
@@ -546,7 +570,7 @@ def generate_tasks_ngmlr_sniffles(settings):
         sort_bam_list.append(out_sort_bam_file)
 
         align_cmd = settings.ngmlr + ' -t %d -r %s -q %s | %s view -bS - > %s\n' % (settings.n_thread, settings.ref_fasta, input_file, settings.samtools, out_bam_file)
-        sort_cmd = samtools_sort_cmd(settings.samtools, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
+        sort_cmd = samtools_sort_cmd(settings, out_bam_file, out_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, out_sort_bam_file) + endl
 
         align_task = Task(task_id, align_cmd, align_sh_file, out_bam_file, 'UNK', list())
@@ -621,9 +645,13 @@ def samtools_index_cmd(samtools, sort_bam):
     cmd = '%s index %s' % (samtools, sort_bam)
     return  cmd
 
-def samtools_sort_cmd(samtools, input_bam, output_bam, n_thread):
+def samtools_sort_cmd(settings, samtools, input_bam, output_bam, n_thread):
 
-    cmd = '%s sort -@ %d -o %s %s' % (samtools, n_thread, output_bam, input_bam) 
+    if settings.samtools_version  == 'new':
+        cmd = '%s sort -@ %d -o %s %s' % (samtools.samtools, n_thread, output_bam, input_bam) 
+    else:
+        cmd = '%s sort -@ %d -f %s %s' % (samtools.samtools, n_thread, input_bam, output_bam)
+
     return cmd
 
 def get_file_prefix(input_file):
