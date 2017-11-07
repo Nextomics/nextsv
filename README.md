@@ -20,7 +20,7 @@ PBHoney, Sniffles
 
 Prerequisites:
    
-zlib-dev, cmake, gcc/g++(>=4.8.2), pip
+zlib-dev, cmake, gcc/g++(>=4.8.2), pip, bwa, samtools
 
 Downloading NextSV: 
 
@@ -44,7 +44,7 @@ sh install_sniffles.sh
 ```
 If you have sniffles installed on your system, you can skip this step and specify the path to sniffles in the config file.
 
-For user's convenience, we provided compiled binary files of NGMLR and BLASR. The binary file of NGMLR was released by its author (https://github.com/philres/ngmlr). The binary file of BLASR was compiled by us. The copyright of NGMLR and BLASR can be found in the Copyright section of this file. Users can also choose to use their own binary files by specifing the path in the config file. 
+For user's convenience, we provided compiled binary files of NGMLR and BLASR. The binary file of NGMLR was released by its author (https://github.com/philres/ngmlr). The binary file of BLASR was compiled by us. The copyright of NGMLR and BLASR can be found in the Copyright section of this file. We tested the two binary files on CentOS 6.5 and Ubuntu 14.
 
 
 ## Usage
@@ -97,7 +97,7 @@ A template config file can be found in example.config. The following parameters 
 
 `sniffles`: full path to sniffles binary file
 
-`samtools`: full path to samtools binary file (version >= 1.3)
+`samtools`: full path to samtools binary file
 
 `ref_fasta`: full path to reference genome fasta file (for BWA and NGMLR aligners. If `enable_bwa_Sniffles=1` is specified, the fasta file should be pre-indexed by BWA. If `enable_bwa_Sniffles=0` is specified, the fasta file does not need to be pre-indexed)
 
