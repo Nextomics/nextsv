@@ -588,10 +588,13 @@ def tails_align_cmd(settings, input_file, output_sam, ouput_bam):
 
 def blasr_align_cmd(settings, input_file, output_file):
 
-    cmd = '%s %s %s -sa %s -nproc %d -bestn 1 -sam -clipping subread -out %s' % (settings.blasr, input_file, settings.ref_blasr, settings.ref_sa_blasr, settings.n_thread, output_file)
+    blasr_n_thread = settings.n_thread / 2
+    if blasr_n_thread < 1: blasr_n_thread = 1
+    cmd = '%s %s %s -sa %s -nproc %d -bestn 1 -sam -clipping subread -out %s' % (settings.blasr, input_file, settings.ref_blasr, settings.ref_sa_blasr, blasr_n_thread, output_file)
     return cmd
 
 def generate_tasks_bwa_sniffles(settings):
+
     global all_task_list
     global task_id 
 
