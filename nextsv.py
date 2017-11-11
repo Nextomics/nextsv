@@ -573,7 +573,7 @@ def generate_tasks_blasr_pbhoney(settings):
 def spots_cmd(settings, input_bam, out_file):
 
     out_prefix = os.path.splitext(out_file)[0] 
-    spots_n_thread = settings.n_thread / 2
+    spots_n_thread = max(1, settings.n_thread / 2)
     cmd = 'python %s spots --nproc %d  --reference %s --threshold %d --minErrReads %s --consensus %s --output %s %s' % (settings.pbhoney, spots_n_thread, settings.ref_blasr, settings.spots_threshold, settings.spots_minErrReads, settings.spots_consensus, out_prefix, input_bam)
     return cmd
 
@@ -584,13 +584,13 @@ def tails_cmd(settings, input_bam, out_file):
 
 def tails_align_cmd(settings, input_file, output_sam, ouput_bam):
 
-    cmd = 'python %s pie --nproc %d --output %s %s %s && %s view -hb -@ %d %s > %s' % (settings.pbhoney, settings.n_thread, output_sam, input_file, settings.ref_blasr, settings.samtools, settings.n_thread, output_sam, ouput_bam)
+    n_thread = max(1, settings.n_thread / 2)
+    cmd = 'python %s pie --nproc %d --output %s %s %s && %s view -hb -@ %d %s > %s' % (settings.pbhoney, n_thread, output_sam, input_file, settings.ref_blasr, settings.samtools, settings.n_thread, output_sam, ouput_bam)
     return cmd
 
 def blasr_align_cmd(settings, input_file, output_file):
 
-    blasr_n_thread = settings.n_thread / 2
-    if blasr_n_thread < 1: blasr_n_thread = 1
+    blasr_n_thread = max(1, settings.n_thread / 2)
     cmd = '%s %s %s -sa %s -nproc %d -bestn 1 -sam -clipping subread -out %s' % (settings.blasr, input_file, settings.ref_blasr, settings.ref_sa_blasr, blasr_n_thread, output_file)
     return cmd
 
