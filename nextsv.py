@@ -573,7 +573,8 @@ def generate_tasks_blasr_pbhoney(settings):
 def spots_cmd(settings, input_bam, out_file):
 
     out_prefix = os.path.splitext(out_file)[0] 
-    cmd = 'python %s spots --nproc %d  --reference %s --threshold %d --minErrReads %s --consensus %s --output %s %s' % (settings.pbhoney, settings.n_thread, settings.ref_blasr, settings.spots_threshold, settings.spots_minErrReads, settings.spots_consensus, out_prefix, input_bam)
+    spots_n_thread = settings.n_thread / 2
+    cmd = 'python %s spots --nproc %d  --reference %s --threshold %d --minErrReads %s --consensus %s --output %s %s' % (settings.pbhoney, spots_n_thread, settings.ref_blasr, settings.spots_threshold, settings.spots_minErrReads, settings.spots_consensus, out_prefix, input_bam)
     return cmd
 
 def tails_cmd(settings, input_bam, out_file):
