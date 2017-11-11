@@ -118,7 +118,7 @@ def main():
     if settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails:
         blasr_pbhoney_tasks = generate_tasks_blasr_pbhoney(settings)
 
-    run_alignment_and_svcalling(settings)
+    #run_alignment_and_svcalling(settings)
 
     merging_results(settings)
 
@@ -313,7 +313,7 @@ def merging_results(settings):
 
     if settings.enable_PBHoney_Spots: 
         input_file = settings.spots_file
-        prefix     = os.path.split(input_vcf)[1]
+        prefix     = os.path.split(input_file)[1]
         out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
         cmd = formatting_spots_file(settings, input_file, out_prefix)
         merge_sh_fp.write(cmd + endl)
@@ -322,7 +322,7 @@ def merging_results(settings):
 
     if settings.enable_PBHoney_Tails:
         input_file = settings.tails_file
-        prefix     = os.path.split(input_vcf)[1]
+        prefix     = os.path.split(input_file)[1]
         out_prefix = os.path.join(settings.nextsv_out_dir, prefix)
         cmd = formatting_tails_file(settings, input_file, out_prefix)
         merge_sh_fp.write(cmd + endl)
@@ -567,25 +567,26 @@ def generate_tasks_blasr_pbhoney(settings):
         generate_shell_file_from_task(settings, svcall_task) 
         task_id += 1 
 
-    #return (align_tasks, sort_tasks, index_tasks, merge_and_call_tasks)
     return
 
 def spots_cmd(settings, input_bam, out_file):
 
     out_prefix = os.path.splitext(out_file)[0] 
     spots_n_thread = max(1, settings.n_thread / 2)
-    cmd = 'python %s spots --nproc %d  --reference %s --threshold %d --minErrReads %s --consensus %s --output %s %s' % (settings.pbhoney, spots_n_thread, settings.ref_blasr, settings.spots_threshold, settings.spots_minErrReads, settings.spots_consensus, out_prefix, input_bam)
+    cmd  = 'rm -f %s.h5 %s.spots    &&    ' % (out_prefix, out_prefix)
+    cmd += 'python %s spots --nproc %d  --reference %s --threshold %d --minErrReads %s --consensus %s --output %s %s' % (settings.pbhoney, spots_n_thread, settings.ref_blasr, settings.spots_threshold, settings.spots_minErrReads, settings.spots_consensus, out_prefix, input_bam)
     return cmd
 
 def tails_cmd(settings, input_bam, out_file):
     
-    cmd = 'python %s tails --buffer %d --minBreads %d --minZMWs %d --output %s %s' % (settings.pbhoney, settings.tails_buffer, settings.tails_minBreads, settings.tails_minZMWs, out_file, input_bam)   
+    cmd  = 'rm -f %s    &&    ' % (out_file)
+    cmd += 'python %s tails --buffer %d --minBreads %d --minZMWs %d --output %s %s' % (settings.pbhoney, settings.tails_buffer, settings.tails_minBreads, settings.tails_minZMWs, out_file, input_bam)   
     return cmd
 
 def tails_align_cmd(settings, input_file, output_sam, ouput_bam):
 
     n_thread = max(1, settings.n_thread / 2)
-    cmd = 'python %s pie --nproc %d --output %s %s %s && %s view -hb -@ %d %s > %s' % (settings.pbhoney, n_thread, output_sam, input_file, settings.ref_blasr, settings.samtools, settings.n_thread, output_sam, ouput_bam)
+    cmd = 'python %s pie --nproc %d --output %s %s %s    &&    %s view -hb -@ %d %s > %s' % (settings.pbhoney, n_thread, output_sam, input_file, settings.ref_blasr, settings.samtools, settings.n_thread, output_sam, ouput_bam)
     return cmd
 
 def blasr_align_cmd(settings, input_file, output_file):
