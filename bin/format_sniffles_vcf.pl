@@ -4,7 +4,7 @@ use strict;
 my $usage = "Usage:   perl $0 <in.sniffles.vcf> <out_prefix>\n";
 $usage   .= "Contact: Li Fang (fangli\@grandomics.com)\n";
 $usage   .= "Version: 0.4.0\n";
-die $usage if (@ARGV < 1);
+die $usage if (@ARGV < 2);
 
 my $min_length = 50;        # min sv length for DEL, DUP and INV
 my $max_length = 10000000;   # max sv length for DEL, DUP and INV
@@ -14,7 +14,7 @@ my $out_prefix = shift(@ARGV);
 my $out1 = "$out_prefix.INS.bed";
 my $out2 = "$out_prefix.DEL.bed";
 my $out3 = "$out_prefix.INV.bed";
-my $out4 = "$out_prefix.TRA.vcf";   # not bed format
+my $out4 = "$out_prefix.TRA.bedpe";   # not bed format
 my $out5 = "$out_prefix.DUP.bed";
 
 open (IN, $in) or die $!;
@@ -37,10 +37,6 @@ my %hash = ("1" => 1, "2" => 1, "3" => 1, "4" => 1, "5" => 1, "6" => 1, "7" => 1
 
 while (my $line = <IN>)
 {
-	if ($line =~ /^#/){
-		print TRA $line;
-		next;
-	}
 	chomp $line;
 	(my $chr, my $start, my $id, my $ref, my $type, my $qual, my $filter, my $info, my $format, my $sample) = split("\t", $line);
 
@@ -66,8 +62,14 @@ while (my $line = <IN>)
 	next if ($rd_supp < $min_read_supp );
 
 	if ($type =~ /TRA/){
+		$type = "TRA";
 		if (exists ($hash{$chr}) and exists ($hash{$chr2})){
-			print TRA $line."\n";
+			my $start1 = $start;
+			my $end1 = $start1+1;
+			my $start2 = $end;
+			my $end2 = $start2+1;
+			my $item = "$chr\t$start1\t$end1\t$chr2\t$start2\t$end2\tcomments:sv_type=$type;sv_caller=Sniffles;numReads=$rd_supp;$filter;$info;$format;$sample\n";
+			print TRA $item;
 		}
 		next;
 	}
