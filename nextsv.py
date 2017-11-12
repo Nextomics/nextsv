@@ -118,7 +118,7 @@ def main():
     if settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails:
         blasr_pbhoney_tasks = generate_tasks_blasr_pbhoney(settings)
 
-    #run_alignment_and_svcalling(settings)
+    run_alignment_and_svcalling(settings)
 
     merging_results(settings)
 
