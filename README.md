@@ -2,25 +2,21 @@
 
 NextSV, a meta SV caller and a computational pipeline to perform SV calling from low coverage long-read sequencing data. NextSV integrates three aligners and three SV callers and generates two integrated call sets (sensitive/stringent) for different analysis purpose. The output of NextSV is in ANNOVAR-compatible bed format. Users can easily perform downstream annotation using ANNOVAR and disease gene discovery using Phenolyzer.
 
-## Features
 
-* Suitable for identifying structural variants from Mendelian diseases.
+## Supported aligners/SV caller combinations
 
-* Fast and easy customization
+BLASR/PBHoney-Spots, BLASR/PBHoney-Tails, BWA-MEM/Sniffles, NGMLR/Sniffles
 
-## Supported aligners
+Users can choose to run any of the four aligner/SV caller combinations. By default, NextSV will enable BLASR / PBHoney-Spots, BLASR / PBHoney-Tails and NGMLR / Sniffles and integrate the results to generate the sensitive calls and stringent calls. We do not enable BWA / Sniffles by default because Sniffles works better with NGMLR in our evaluation and alignment is a time consuming step. 
 
-BLASR, BWA-MEM, NGMLR
+SVs that are shorter than reads may result in intra-read discordances while larger SVs may result in soft-clipped tails of long reads. We suggest running both PBHoney-Spots and PBHoney-Tails because they are two complementary algorithms designed to detect intra-read discordances and soft-clipped tails, respectively. Sniffles uses multiple evidences to detect SV so it should be suitable for both types of SVs.
 
-## Supported SV callers
-
-PBHoney, Sniffles
 
 ## Installation
 
 Prerequisites:
    
-zlib-dev, cmake, gcc/g++(>=4.8.2), pip, bwa, samtools
+zlib-dev, cmake, gcc/g++(>=4.8.2), pip, bwa, samtools (version 1.3 or later)
 
 Downloading NextSV: 
 
@@ -51,6 +47,7 @@ For user's convenience, we provided compiled binary files of NGMLR and BLASR. Th
 ```
 python nextsv.py [config_file]
 ```
+
 A template config file can be found in example.config. The following parameters can be set in the config file:
 
 `sample_name`: sample name. It will be a part of the prefix of the output files. 
@@ -63,7 +60,7 @@ A template config file can be found in example.config. The following parameters 
 
 `mode`: running mode of NextSV. NextSV currently supports two modes: multiprocessing or sge. `mode=multiprocessing` means that NextSV will run in parallel using multiple cores (equal to `n_thread`) on a single machine. `mode=sge` means that NextSV will submit the jobs to the SGE (Sun Grid Engine) cluster. If `mode=sge` is specified, users need to provide the submission command with parameters (`job_submission_command`).
 
-`job_submission_command`: job submission command with parameters. Please specify number of threads in the parameters. For example, `job_submission_command=[qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12]` means that the job will be submitted using qsub and the parameters for qsub is "-V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12", which means the job will use 12 threads and 4G memory for each thread. NextSV will copy this command while submitting the shell script file. 
+`job_submission_command`: job submission command with parameters. Please specify the resources (including number of threads and memory) in the parameters. For example, `job_submission_command=[qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12]` means that the job will be submitted using qsub and the parameters for qsub is "-V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12", which means the job will use 12 threads and 4G memory for each thread. NextSV will copy this command while submitting the shell script file. 
 
 `enable_PBHoney_Spots`: whether to enable SV calling using PBHoney-Spots (1 for enable, 0 for disable)
 
@@ -112,6 +109,30 @@ A template config file can be found in example.config. The following parameters 
 `ref_sa_blasr`: full path to precomputed suffix array of reference genome fasta file for blasr aligner (for information of generating the suffix array, please refer to https://github.com/PacificBiosciences/blasr/blob/master/README.MANUAL.md)
 
 Please use full paths in the config file and input list file.
+
+
+## Output
+
+NextSV will generate a directory for each aligner/SV caller combination (e.g. `blasr_pbhoney`, `bwa_sniffles`, `ngmlr_sniffles`). The formatted results (bed format for DEL, DUP, INV, INS and bedpe format for TRA) as well as NextSV stringent/sensitive calls will be stored in the `nextsv_results` directory. 
+
+NextSV sensitive call set is generated as:
+
+SNIF ∪ (SPOT ∪ TAIL),
+
+and NextSV stringent call set is generated as
+
+SNIF ∩ (SPOT ∪ TAIL),
+
+where SNIF denotes the call set of NGMLR / Sniffles, SPOT denotes the call set of BLASR / PBHoney-Spots and TAIL denotes the call set of BLASR / PBHoney-Tails.
+
+Since PBHoney-Spots only output insertion and deletion calls, we only generate stringent/sensitive calls for this two SV types. 
+
+## FAQ
+
+__If I do not use SGE, can I use NextSV to submit jobs to the cluster?__
+
+Since we found some compatible issues between different versions of SGE, we did not use a parallel computing library. Instead, we use job submission commands provided by the user. While submitting jobs to the cluster, NextSV will copy `job_submission_command` before the shell script. For example, if `job_submission_command=[qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12]` is specified, and the shell script is `align.0.sh`, NextSV will submit the job by executing `qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12 align.0.sh`. Therefore, as long as your job submission command is in the format of "job_submit_program + parameters + path/to/shell", you may still use NextSV to submit jobs to the cluster. 
+
 
 ## Contact
 
