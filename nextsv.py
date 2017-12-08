@@ -4,6 +4,8 @@ import os
 import sys
 import random
 import time
+from datetime import datetime
+import commands
 
 tab  = '\t'
 endl = '\n'
@@ -93,14 +95,20 @@ def main():
     global all_task_list
     global task_id 
 
+    myprint('program started')
+    myprint('reading config file')
     config_file = sys.argv[1]
     settings = parse_config_file(config_file)
     random.seed()
     settings.runtimekey = random.randint(10000000000, 99999999999)
 
+    myprint('creating output directories')
     creat_output_dirs(settings)
+    myprint('checking samtools version')
     check_samtools_version(settings)
+    myprint('reading input files list')
     settings.input_list = read_input_files(settings.input_file_list) 
+    myprint('checking input files')
     check_input_file_format(settings)
 
     extract_fastq_from_rawdata(settings)
@@ -109,18 +117,27 @@ def main():
     bwa_sniffles_tasks = None
     blasr_pbhoney_tasks = None
 
+    myprint('generating tasks')
     if settings.enable_ngmlr_Sniffles:
+        myprint('generating tasks for NGMLR/Sniffles')
         ngmlr_sniffles_tasks = generate_tasks_ngmlr_sniffles(settings)
 
     if settings.enable_bwa_Sniffles:
+        myprint('generating tasks for BWA/Sniffles')
         bwa_sniffles_tasks = generate_tasks_bwa_sniffles(settings)
 
     if settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails:
+        myprint('generating tasks for BLASR/PBHoney')
         blasr_pbhoney_tasks = generate_tasks_blasr_pbhoney(settings)
 
+    myprint('running tasks')
     run_alignment_and_svcalling(settings)
 
+    myprint('merging calls')
     merging_results(settings)
+    myprint('program finished')
+        
+    return
 
 def extract_fastq_from_rawdata(settings):
 
@@ -128,8 +145,10 @@ def extract_fastq_from_rawdata(settings):
     os.system('mkdir -p ' + settings.extract_fastq_dir)
 
     if settings.input_file_format == 'hdf5':
+        myprint('extracting fastq from hdf5 format input files')
         extract_fastq_from_hdf5(settings)
     elif settings.input_file_format == 'bam':
+        myprint('extracting fastq from bam format input files')
         extract_fastq_from_bam(settings)
     return
 
@@ -257,29 +276,25 @@ def check_input_file_format(settings):
         myprint ('ERROR! input files can only be fastq, fasta, or hdf5')
         sys.exit()
 
+
     return
     
 def check_samtools_version(settings):
 
-    tmp_file = os.path.join(settings.out_dir, '.samtools_tmp')
-    tmp_fp = open(tmp_file, 'w')
-    tmp_fp.close()
-
-    cmd = '%s sort &>> %s ' % (settings.samtools, tmp_file) 
-    os.system(cmd)
-    tmp_fp = open(tmp_file, 'r')
-    lines = list(tmp_fp)
-    tmp_fp.close()
+    cmd = '%s sort' % (settings.samtools) 
+    results = commands.getoutput(cmd)
+    lines = results.split(endl)
     target_str = " -f "
     settings.samtools_version = 'new'
     for line in lines:
         if line.find(target_str) >= 0:
             settings.samtools_version = 'old'
             break 
-    os.system ('rm %s' % tmp_file)
+    myprint ('samtools sort version is %s' % settings.samtools_version)
     return
 
 def merging_results(settings):
+
     merge_sh = os.path.join(settings.nextsv_out_dir, 'merge_calls.sh')
     merge_sh_fp = open(merge_sh, 'w')
     merge_sh_fp.write('#!/bin/bash\n\n')
@@ -914,31 +929,55 @@ def parse_config_file(config_file):
         
 
     if settings.input_file_list == None:
-        myprint ('ERROR! input file list not specified')
+        myprint ('ERROR! input list file not specified')
+        sys.exit()
+    if os.path.exists(settings.input_file_list) == False:
+        myprint ('ERROR! input list file not found: %s' % settings.input_file_list)
         sys.exit()
     if settings.out_dir == None:
         myprint('ERROR! output directory not specified') 
         sys.exit()
-    if settings.samtools == None:
+    if settings.samtools == None: 
         myprint('ERROR! path to samtools not specified') 
+        sys.exit()
+    if os.path.exists(settings.samtools) == False: 
+        myprint('ERROR! samtools binary not found: %s' % settings.samtools) 
         sys.exit()
     if settings.enable_bwa_Sniffles and settings.bwa == None:
         myprint('ERROR! path to bwa not specified') 
         sys.exit()
+    if settings.enable_bwa_Sniffles and os.path.exists(settings.bwa) == False:
+        myprint('ERROR! bwa binary not found: %s' % settings.bwa) 
+        sys.exit()
     if settings.enable_ngmlr_Sniffles and settings.ngmlr == None:
         myprint('ERROR! path to ngmlr not specified') 
+        sys.exit()
+    if settings.enable_ngmlr_Sniffles and os.path.exists(settings.ngmlr) == False:
+        myprint('ERROR! ngmlr binary not found: %s' % settings.ngmlr) 
         sys.exit()
     if (settings.enable_bwa_Sniffles or settings.enable_ngmlr_Sniffles) and settings.sniffles == None:
         myprint('ERROR! path to sniffles not specified') 
         sys.exit()
+    if (settings.enable_bwa_Sniffles or settings.enable_ngmlr_Sniffles) and os.path.exists(settings.sniffles) == False:
+        myprint('ERROR! sniffles binary not found: %s' % settings.sniffles) 
+        sys.exit()
     if settings.enable_bwa_Sniffles and settings.ref_fasta == None:
-        myprint('ERROR! ref_fasta (reference fasta file for bwa) not specified')
+        myprint('ERROR! ref_fasta (reference fasta file for bwa or ngmlr) not specified')
+        sys.exit()
+    if settings.enable_bwa_Sniffles and os.path.exists(settings.ref_fasta) == False:
+        myprint('ERROR! ref_fasta (reference fasta file for bwa or ngmlr) not found: %s' % settings.ref_fasta)
         sys.exit()
     if (settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails) and settings.ref_blasr == None:
         myprint('ERROR! ref_blasr (reference fasta file for blasr) not specified')
         sys.exit()
+    if (settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails) and os.path.exists(settings.ref_blasr) == False:
+        myprint('ERROR! ref_blasr (reference fasta file for blasr) not found: %s' % settings.ref_blasr)
+        sys.exit()
     if (settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails) and settings.ref_sa_blasr == None:
         myprint('ERROR! ref_sa_blasr (suffix array file for blasr) not specified')
+        sys.exit()
+    if (settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails) and os.path.exists(settings.ref_sa_blasr) == False:
+        myprint('ERROR! ref_sa_blasr (suffix array file for blasr) not found: %s' % settings.ref_sa_blasr)
         sys.exit()
     if settings.sample_name == None:
         myprint('ERROR! sample name is not specified')
@@ -946,9 +985,13 @@ def parse_config_file(config_file):
 
     return settings 
 
+
+TimeFormat = '%m/%d/%Y %H:%M:%S'
+
 def myprint(string):
 
-    print string
+    print >> sys.stderr, '[' + datetime.now().strftime(TimeFormat) + ']', string
+
     return 
 
 if __name__ == '__main__':
