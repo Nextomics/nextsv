@@ -836,7 +836,8 @@ def creat_output_dirs(settings):
         settings.bwa_sniffles_dir = os.path.join(settings.out_dir, 'bwa_sniffles')
         os.system('mkdir -p %s' % settings.bwa_sniffles_dir)
 
-    if settings.enable_bwa_Sniffles:
+    if settings.enable_ngmlr_Sniffles:
+        print settings.out_dir, settings.ngmlr_sniffles_dir
         settings.ngmlr_sniffles_dir = os.path.join(settings.out_dir, 'ngmlr_sniffles')
         os.system('mkdir -p %s' % settings.bwa_sniffles_dir)
 
