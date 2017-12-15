@@ -103,7 +103,7 @@ def main():
     settings.runtimekey = random.randint(10000000000, 99999999999)
 
     myprint('creating output directories')
-    creat_output_dirs(settings)
+    create_output_dirs(settings)
     myprint('checking samtools version')
     check_samtools_version(settings)
     myprint('reading input files list')
@@ -290,7 +290,6 @@ def check_samtools_version(settings):
         if line.find(target_str) >= 0:
             settings.samtools_version = 'old'
             break 
-    myprint ('samtools sort version is %s' % settings.samtools_version)
     return
 
 def merging_results(settings):
@@ -523,7 +522,7 @@ def generate_tasks_blasr_pbhoney(settings):
         sort_bam_list.append(tails_sort_bam_file)
         bam_index_file = tails_sort_bam_file + '.bai'
 
-        align_cmd = blasr_align_cmd(settings, input_file, blasr_sam_file) + ' && ' + tails_align_cmd(settings, blasr_sam_file, tails_sam_file, tails_bam_file) + endl    
+        align_cmd = blasr_align_cmd(settings, input_file, blasr_sam_file) + '    &&    ' + tails_align_cmd(settings, blasr_sam_file, tails_sam_file, tails_bam_file) + endl    
         sort_cmd = samtools_sort_cmd(settings, tails_bam_file, tails_sort_bam_file, settings.n_thread) + endl
         index_cmd = samtools_index_cmd(settings.samtools, tails_sort_bam_file) + endl
 
@@ -783,7 +782,9 @@ def generate_shell_file_from_task(settings, task):
     sh_fp = open(sh_file, 'w')
     sh_fp.write('#!/bin/bash\n\n')
     sh_fp.write(task.cmd + endl)
-    sh_fp.write('echo %d > %s\n' % (settings.runtimekey, task.out_file + '.finished'))
+    sh_fp.write('if [ -f "%s" ]\nthen\n' % task.out_file)
+    sh_fp.write('    echo %d > %s\n' % (settings.runtimekey, task.out_file + '.finished'))
+    sh_fp.write('fi\n')
     sh_fp.close()
 
     return
@@ -826,7 +827,7 @@ def read_input_files(input_file_list):
     input_list_fp.close()
     return input_list
 
-def creat_output_dirs(settings):
+def create_output_dirs(settings):
 
     if settings.enable_PBHoney_Spots or settings.enable_PBHoney_Tails:
         settings.blasr_pbhoney_dir = os.path.join(settings.out_dir, 'blasr_pbhoney')
@@ -837,9 +838,8 @@ def creat_output_dirs(settings):
         os.system('mkdir -p %s' % settings.bwa_sniffles_dir)
 
     if settings.enable_ngmlr_Sniffles:
-        print settings.out_dir, settings.ngmlr_sniffles_dir
         settings.ngmlr_sniffles_dir = os.path.join(settings.out_dir, 'ngmlr_sniffles')
-        os.system('mkdir -p %s' % settings.bwa_sniffles_dir)
+        os.system('mkdir -p %s' % settings.ngmlr_sniffles_dir)
 
     settings.nextsv_out_dir = os.path.join(settings.out_dir, 'nextsv_results')
     os.system('mkdir -p %s' % settings.nextsv_out_dir)
