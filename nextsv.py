@@ -782,9 +782,9 @@ def generate_shell_file_from_task(settings, task):
     sh_fp = open(sh_file, 'w')
     sh_fp.write('#!/bin/bash\n\n')
     sh_fp.write(task.cmd + endl)
-    sh_fp.write('if [ -f "%s" ]\nthen\n' % task.out_file)
-    sh_fp.write('    echo %d > %s\n' % (settings.runtimekey, task.out_file + '.finished'))
-    sh_fp.write('fi\n')
+    #sh_fp.write('if [ -f "%s" ]\nthen\n' % task.out_file)
+    sh_fp.write('echo %d > %s\n' % (settings.runtimekey, task.out_file + '.finished'))
+    #sh_fp.write('fi\n')
     sh_fp.close()
 
     return
