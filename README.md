@@ -135,6 +135,12 @@ __If I do not use SGE, can I use NextSV to submit jobs to the cluster?__
 
 Since we found some compatible issues between different versions of SGE, we did not use a parallel computing library. Instead, we use job submission commands provided by the user. While submitting jobs to the cluster, NextSV will copy `job_submission_command` before the shell script. For example, if `job_submission_command=[qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12]` is specified, and the shell script is `align.0.sh`, NextSV will submit the job by executing `qsub -V -cwd -S /bin/bash -l h_vmem=4G -pe smp 12 align.0.sh`. Therefore, as long as your job submission command is in the format of "job_submit_program + parameters + path/to/shell", you may still use NextSV to submit jobs to the cluster. 
 
+__Can I run nextsv.py from a head node on my cluster?__
+
+It depends on the running mode of nextsv. If the running mode is "sge", nextsv.py will submit jobs to the cluster thus itself is lightweight and can be run from a head node. If the running mode is "multiprocessing", nextsv.py will run the jobs on the current node thus it can be very heavy. In this case, you should run nextsv.py on a compute node. 
+
+
+
 
 ## Contact
 
