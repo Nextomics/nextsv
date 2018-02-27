@@ -16,7 +16,7 @@ SVs that are shorter than reads may result in intra-read discordances while larg
 
 Prerequisites:
    
-zlib-dev, cmake, gcc/g++(>=4.8.2), pip, bwa, samtools (version 1.3 or later)
+zlib-dev, cmake, gcc/g++(>=4.8.2), pip, bwa, samtools (version 1.3 or later), python 2.7
 
 Downloading NextSV: 
 
