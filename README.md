@@ -129,6 +129,42 @@ where SNIF denotes the call set of NGMLR / Sniffles, SPOT denotes the call set o
 
 Since PBHoney-Spots only output insertion and deletion calls, we only generate stringent/sensitive calls for this two SV types. 
 
+If you run all the aligner/SV caller combinations, you will get the following files in the `nextsv_results` folder:
+
+```
+out_prefix.nextsv_sensitive.DEL.bed
+out_prefix.nextsv_sensitive.INS.bed
+out_prefix.nextsv_stringent.DEL.bed
+out_prefix.nextsv_stringent.INS.bed
+
+out_prefix.bwa.sniffles.vcf.DEL.bed
+out_prefix.bwa.sniffles.vcf.DUP.bed
+out_prefix.bwa.sniffles.vcf.INS.bed
+out_prefix.bwa.sniffles.vcf.INV.bed
+out_prefix.bwa.sniffles.vcf.TRA.bedpe
+
+out_prefix.ngmlr.sniffles.vcf.DEL.bed
+out_prefix.ngmlr.sniffles.vcf.DUP.bed
+out_prefix.ngmlr.sniffles.vcf.INS.bed
+out_prefix.ngmlr.sniffles.vcf.INV.bed
+out_prefix.ngmlr.sniffles.vcf.TRA.bedpe
+
+out_prefix.pbhoney.DEL.bed
+out_prefix.pbhoney.INS.bed
+out_prefix.spots.DEL.bed
+out_prefix.spots.INS.bed
+out_prefix.tails.DEL.bed
+out_prefix.tails.INS.bed
+out_prefix.tails.INV.bed
+```
+Using deletion calls as an example, the `out_prefix.nextsv_sensitive.DEL.bed` file contains the NextSV sensitive deletion calls;
+the `out_prefix.nextsv_stringent.DEL.bed` file contains the NextSV stringent deletion calls;
+the `out_prefix.bwa.sniffles.vcf.DEL.bed` file contains the deletion calls detected by BWA-MEM/Sniffles; 
+the `out_prefix.ngmlr.sniffles.vcf.DEL.bed` file contains the deletions calls detected by the NGMLR/Sniffles; 
+the `out_prefix.spots.DEL.bed` file contains the deletion calls detected by BLASR/PBHoney-Spots; 
+the `out_prefix.tails.DEL.bed` file contains the deletion calls detected by BLASR/PBHoney-Tails;
+the `out_prefix.pbhoney.DEL.bed` file contains the union of deletion calls of BLASR/PBHoney-Spots and BLASR/PBHoney-Tails. 
+
 ## FAQ
 
 __If I do not use SGE, can I use NextSV to submit jobs to the cluster?__
