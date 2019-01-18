@@ -1,3 +1,6 @@
 [submodule "longreadqc"]
 	path = longreadqc
 	url = https://github.com/fangli08/longreadqc
+[submodule "pigz"]
+	path = pigz
+	url = https://github.com/madler/pigz
