@@ -11,7 +11,7 @@ tab  = '\t'
 endl = '\n'
 
 usage = '''Program:  NextSV (SV detection from long-read sequencing)
-Version:  2.0.0 
+Version:  1.9.0 
 Usage:    python nextsv.py <config>
 Contact:  Li Fang (fangli@grandomics.com) '''
 
