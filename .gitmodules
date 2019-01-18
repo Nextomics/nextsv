@@ -1,0 +1,3 @@
+[submodule "longreadqc"]
+	path = longreadqc
+	url = https://github.com/fangli08/longreadqc
