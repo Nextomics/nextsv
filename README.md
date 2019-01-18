@@ -3,14 +3,14 @@
 ## Installation
 
 Prerequisites:
-pigz, sniffles, samtools (version 1.3 or later), gcc/g++(>=4.8.2), python 2.7
+sniffles, samtools (version 1.3 or later), gcc/g++(>=4.8.2), python 2.7
 
 Installation:
 
 ```
 git clone --recursive   https://github.com/Nextomics/nextsv.git
-cd nextsv/longreadqc/
-sh build.sh
+cd nextsv/
+sh install.sh
 ```
 
 ## Usage
