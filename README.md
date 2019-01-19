@@ -1,5 +1,7 @@
 # NextSV2: a meta-caller for structrual variation from long-read sequencing.
 
+NextSV2 uses two aligners (Minimap2 and NGMLR) to do read mapping and uses Sniffles to do SV calling and generates consensus calls.
+
 ## Installation
 
 Prerequisites:
