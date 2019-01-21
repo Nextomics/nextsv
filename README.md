@@ -40,7 +40,8 @@ For questions/bugs/issues, please post on [GitHub](https://github.com/Nextomics/
 
 ## Citation
 
-Fang L, Hu J, Wang D, Wang K. [NextSV: a computational pipeline for structural variation analysis from low-coverage long-read sequencing](http://www.biorxiv.org/content/early/2017/07/17/092544). bioRxiv, doi: 10.1101/092544
+Fang L, Hu J, Wang D, Wang K. [NextSV: a meta-caller for structural variants from low-coverage long-read sequencing data](https://doi.org/10.1186/s12859-018-2207-1).  Bioinformatics (2018) 19:180. DOI: 10.1186/s12859-018-2207-1
+
 
 ## More information
 
