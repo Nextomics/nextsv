@@ -1,6 +1,6 @@
 # NextSV2: a meta-caller for structrual variation from long-read sequencing.
 
-NextSV2 uses two aligners (Minimap2 and NGMLR) to do read mapping and uses Sniffles to do SV calling and generates consensus calls.
+NextSV2 uses two aligners (Minimap2 and NGMLR) to do read mapping and uses Sniffles to do SV calling.
 
 ## Installation
 
@@ -29,6 +29,10 @@ A template config file can be found in example.config.
 
 Please use full paths in the config file and input list file.
 
+## Output files
+
+Please go to the output directory. There will be a `work.sh`. Please run the `work.sh` locally or submit it to the cluster. 
+The output VCF files is in the `sniffles_calls` directory.
 
 ## Contact
 
