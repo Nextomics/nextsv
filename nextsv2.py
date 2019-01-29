@@ -127,8 +127,6 @@ def main():
     myprint('checking samtools version')
     check_samtools_version(settings)
 
-    myprint('checking input files')
-    check_input_file_format(settings)
 
     work_sh_file = os.path.join(settings.out_dir, 'work.sh')
     work_sh_fp = open(work_sh_file, 'w')
@@ -250,22 +248,7 @@ def wait_outputfile(settings, output_file_list):
     return
 
 
-def check_input_file_format(settings):
 
-    input_file = settings.input_list[0]
-    input_file_ext = os.path.splitext(input_file)[1].lower()
-    if input_file_ext == '.fasta' or input_file_ext == '.fa':
-        settings.input_file_format = 'fasta'
-    elif input_file_ext == '.fastq' or input_file_ext == '.fq':
-        settings.input_file_format = 'fastq'
-    else:
-        settings.input_file_format = 'UNK'
-        myprint ('ERROR! Input files should be fastq or fasta')
-        sys.exit()
-
-
-    return
-    
 def check_samtools_version(settings):
 
     results = subprocess.check_output([settings.samtools, "sort"]).decode()
@@ -397,18 +380,23 @@ def get_file_prefix(input_file):
 
 def read_input_files(input_dir, settings):
 
-    total_file_size = 0
+    total_file_size = 0 
     input_dir = os.path.abspath(input_dir)
     file_list = os.listdir(input_dir) 
     input_list = list()
+    ext1 = ''
+    ext2 = ''
     for f in file_list:
-        ext = os.path.splitext(f)[1].lower()
-        if ext == '.fastq' or ext == '.fq': 
+        split_f = f.split('.')
+        ext1 = split_f[-1].lower()
+        if len(split_f) >= 2: ext2 = split_f[-2].lower()
+        if ext1 == 'fastq' or ext1 == 'fq' or (ext1 == 'gz' and (ext2 == 'fastq' or ext2 == 'fq') )  :   
             in_file = os.path.join(input_dir, f)
             total_file_size += os.path.getsize(in_file)
             input_list.append(in_file)
     
     settings.total_input_file_size = total_file_size
+
 
     if len(input_list) == 0:
         myprint('ERROR! no fastq files were found in the input folder: %s' % input_dir)
