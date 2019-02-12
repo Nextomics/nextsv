@@ -34,7 +34,15 @@ class SVCall:
 
         for info in info_list:
 
+            if info == 'IMPRECISE': 
+                self.precise = 'False'
+                continue
+            if info == 'PRECISE':
+                self.precise = 'True'
+                continue
+
             info = info.split('=')
+            
             if len(info) != 2: continue
             key, value = info
             if key == 'CHR2':
@@ -59,6 +67,8 @@ class SVCall:
                 self.strands = value
             elif key == 'RE':
                 self.read_supp = int(value)
+            elif key == 'RNAMES':
+                self.readnames = value
 
         if self.chr1 == self.chr2:
             self.sv_len = abs(self.reported_sv_len)
@@ -75,17 +85,37 @@ class SVCall:
             bk2 = a[1]
             self.chr2, self.pos2 = a[1].split(':')
             self.pos2 = int(self.pos2)
+        
+        self.genotype  = './.'
+        self.ref_reads = '.'
+        self.alt_reads = '.'
 
+        genotype_info = self.genotype_info.split(':')
+        if len(genotype_info) == 3:
+            self.genotype, self.ref_reads, self.alt_reads = genotype_info
 
+        self.vaf = 'NA'
+        if self.ref_reads != '.' and self.alt_reads != '.':
+            ref_reads = float(self.ref_reads)
+            alt_reads = float(self.alt_reads)
+            vaf = alt_reads / (alt_reads + ref_reads) * 100
+            self.vaf = '%.1f%%' % (vaf)
 
+        
+    # sv_type, sv_len, sv_id, filter, read_supp, 
     def output(self):
 
         if self.chr1 == self.chr2:
-            outstring = '%s\t%d\t%d\t%s\t%s\t'     %  (self.chr1, self.pos1, self.pos2, self.filter, self.svtype)
+            outstring = '%s\t%d\t%d\t' % (self.chr1, self.pos1-1, self.pos2)
         else:
-            outstring = '%s\t%d\t%d\t%s\t%d\t%d\t%s\t%s\t' %  (self.chr1, self.pos1-1, self.pos1, self.chr2, self.pos2-1, self.pos2, self.filter, self.svtype)
+            outstring = '%s\t%d\t%d\t%s\t%d\t%d\t' % (self.chr1, self.pos1-1, self.pos1, self.chr2, self.pos2-1, self.pos2)
 
-        outstring += '%d\t%d\tsupp_type=%s;std1=%.4f;std2=%.4f;kurt1=%.4f;kurt2=%.4f;strand=%s' % (self.sv_len, self.read_supp, self.supp_type, self.std1, self.std2, self.kurt1, self.kurt2, self.strands)
+        outstring += '%s\t%d\tID=%s\t%s\t%d\t%s\t' % (self.svtype, self.sv_len, self.id, self.filter, self.read_supp, self.vaf)
+
+        outstring += 'genotype=%s;ref_reads=%s;alt_reads=%s;supp_type=%s;precise=%s;std1=%.4f;std2=%.4f;kurt1=%.4f;kurt2=%.4f;strand=%s;\t' % (self.genotype, self.ref_reads, self.alt_reads, self.supp_type, self.precise, self.std1, self.std2, self.kurt1, self.kurt2, self.strands)
+
+        outstring += 'ref=%s\talt=%s\t' % (self.ref, self.alt)
+        outstring += '%s' % (self.readnames)
 
         return outstring
 

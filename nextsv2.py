@@ -67,8 +67,8 @@ class Setting:
         self.minimap2 = os.path.join(self.root_dir, 'bin/minimap2')
         self.longreadqc = os.path.join(self.root_dir, 'bin/longreadqc')
         self.samtools = 'samtools'
-        self.pigz = 'pigz' 
-        self.sniffles = os.path.join(self.root_dir, 'bin/sniffles')
+        self.pigz = os.path.join(self.root_dir, 'bin/pigz')
+        self.sniffles = 'sniffles'
         self.runtimekey = None 
         self.format_sniffles_vcf = os.path.join(self.root_dir, 'bin/format_sniffles_vcf.pl')
         self.merge2sv = os.path.join(self.root_dir, 'bin/merge2sv.pl') 
@@ -267,8 +267,7 @@ def generate_tasks_sniffles(settings, input_bam, aligner_name):
 
     out_dir = settings.sniffles_calls_dir
     out_vcf = os.path.join(out_dir, '%s.%s.sniffles.vcf' % (settings.sample_name, aligner_name)) 
-    cmd = 'time %s -m %s --vcf %s --min_support %d --max_distance %d --threads %d' % (settings.sniffles, input_bam, out_vcf, settings.sniffles_min_support, settings.sniffles_max_distance, settings.n_thread)
-
+    cmd = 'time %s -m %s --vcf %s --min_support %d --max_distance %d --threads %d --num_reads_report -1 --genotype --cluster --report_seq ' % (settings.sniffles, input_bam, out_vcf, settings.sniffles_min_support, settings.sniffles_max_distance, settings.n_thread)
 
     sh_file = os.path.join(out_dir, 'sniffles.%s.%s.sh' %  (aligner_name, settings.sample_name))
 
@@ -479,9 +478,7 @@ def parse_config_file(config_file, settings):
 
 
         elif key == 'samtools':
-            settings.samtools   = os.path.abspath(value)
-        elif key == 'longreadqc':
-            settings.longreadqc = os.path.abspath(value)
+            settings.samtools = os.path.abspath(value)
         elif key == 'pigz':
             settings.pigz   = os.path.abspath(value)
         elif key == 'sniffles':
