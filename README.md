@@ -13,7 +13,7 @@ NextSV3 uses Minimap2 to do read mapping and uses two state-of-the-art SV caller
 - [cuteSV](https://github.com/tjiangHIT/cuteSV) (v2.0.1 or later)
 - [GCC](https://gcc.gnu.org/) (v4.8.2 or later)
 
-Conda environment is not required but we recommend you install the prerequisites in a new conda environment to avoid potential dependency issues. 
+Conda environment is not required but we highly recommend you install the prerequisites in a new conda environment to avoid potential dependency issues. 
 
 ```
 conda create -n nextsv3 python=3.8
@@ -30,15 +30,27 @@ sh build.sh
 
 ## Usage
 
-Qukck Example: 
+Quick Example:
+
 ```
-python path/to/nextsv3.py  -i path/to/fastq/ -o ./nextsv_output -s sample_name -r path/to/hg38.fasta -t 8
+# Oxford Nanopore reads
+python path/to/nextsv3.py  -i path/to/fastq/folder/ -o ./nextsv_output -s unique_sample_name -r path/to/hg38.fasta -t 8 -p ont -e nextsv3
+
+# PacBio CLR reads
+python path/to/nextsv3.py  -i path/to/fastq/folder/ -o ./nextsv_output -s unique_sample_name -r path/to/hg38.fasta -t 8 -p clr -e nextsv3
+
+# PacBio HiFi reads
+python path/to/nextsv3.py  -i path/to/fastq/folder/ -o ./nextsv_output -s unique_sample_name -r path/to/hg38.fasta -t 8 -p hifi -e nextsv3
 ```
+
+Memory consumption of the pipeline depends on number of threads and the size of the reference genome. For human genomes (3Gb), we recommend 4GB memory per thread. 
 
 Full Usage:
 ```
-usage: nextsv3.py [-h] -i path/to/input_dir -o path/to/output_dir -s sample_name -r ref.fasta [-t INT] [--samtools path/to/samtools] [--minimap2 path/to/minimap2] [--sniffles path/to/sniffles] [--cutesv path/to/cuteSV]
-                  [-v]
+usage: nextsv3.py [-h] -i path/to/input_dir -o path/to/output_dir -s sample_name -r ref.fasta -p sequencing_platform [-t INT] [-e conda_env] [--samtools path/to/samtools] [--minimap2 path/to/minimap2]
+                  [--sniffles path/to/sniffles] [--cuteSV path/to/cuteSV] [-v]
+
+nextsv3: an automated pipeline for structrual variation detection from long-read sequencing. Contact: Li Fang(fangli2718@gmail.com)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -50,41 +62,32 @@ optional arguments:
                         (required) a unique name or id for the input sample
   -r ref.fasta, --ref_fasta ref.fasta
                         (required) path to reference genome sequence in FASTA format
+  -p sequencing_platform, --platform sequencing_platform
+                        (required) sequencing platform. Three valid values: ont/clr/hifi ont: oxford nanopore; clr: PacBio CLR; hifi: PacBio HiFi/CCS
   -t INT, --threads INT
                         (optional) number of threads (default: 4)
+  -e conda_env, --conda_env conda_env
+                        (optional) conda environment name (default: NULL)
   --samtools path/to/samtools
                         (optional) path to samtools (default: using environment default)
   --minimap2 path/to/minimap2
                         (optional) path to minimap2 (default: using environment default)
   --sniffles path/to/sniffles
                         (optional) path to sniffles (default: using environment default)
-  --cutesv path/to/cuteSV
+  --cuteSV path/to/cuteSV
                         (optional) path to cuteSV (default: using environment default)
   -v, --version         show program's version number and exit
-
 ```
 
 ## Output files
 
-Please go to the output directory. There will be a `work.sh`. Please run the `work.sh` locally or submit it to the cluster. 
+SV calls of sniffles and cuteSV will be generated in the `out_dir/3_SV_calls` folder.
 
 ## Contact
 
-For questions/bugs/issues, please post on [GitHub](https://github.com/Nextomics/nextsv). In general, please do NOT send questions to our email. Your question may be very likely to help other users.
+If you have any questions/suggestions, please feel free to post it on the [Issue page](https://github.com/Nextomics/nextsv/issues). You may also email me at `fangli2718@gmail.com`. 
 
 ## Citation
 
 Fang L, Hu J, Wang D, Wang K. [NextSV: a meta-caller for structural variants from low-coverage long-read sequencing data](https://doi.org/10.1186/s12859-018-2207-1).  Bioinformatics (2018) 19:180. DOI: 10.1186/s12859-018-2207-1
 
-
-## More information
-
-* [NextSV Homepage](https://github.com/Nextomics/nextsv)
-
-## Copyright
-
-NextSV is freely available for academic use. It is provided without warranty of any kind, including but not limited to the warranties of merchantability, fitness for a particular purpose and non-infringement. No liability for the software usage is assumed.
-
-For commercial use please contact Grandomics Biosciences (support@grandomics.com) for licensing options. 
-
-Redistribution is allowed. Modification is allowed. Redistribution of modified version is not allowed, but users can submit a push request to github, and after reviewing the modification, we may accept it in the master branch.
