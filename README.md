@@ -30,7 +30,7 @@ sh build.sh
 
 ## Usage
 
-Quick Example:
+### Quick Example
 
 ```
 # Oxford Nanopore reads
@@ -45,7 +45,7 @@ python path/to/nextsv3.py  -i path/to/fastq/folder/ -o ./nextsv_output -s unique
 
 Memory consumption of the pipeline depends on number of threads and the size of the reference genome. For human genomes (3Gb), we recommend 4GB memory per thread. 
 
-Full Usage:
+### Full Usage
 ```
 usage: nextsv3.py [-h] -i path/to/input_dir -o path/to/output_dir -s sample_name -r ref.fasta -p sequencing_platform [-t INT] [-e conda_env] [--samtools path/to/samtools] [--minimap2 path/to/minimap2]
                   [--sniffles path/to/sniffles] [--cuteSV path/to/cuteSV] [-v]
