@@ -1,4 +1,4 @@
-# NextSV3: an automated pipeline for structrual variation detection from long-read sequencing. 
+# NextSV3: automated structrual variation detection from long-read sequencing using state-of-the-art tools. 
 
 NextSV3 uses Minimap2 to do read mapping and uses two state-of-the-art SV callers (Sniffles and cuteSV) to do SV calling.
 
