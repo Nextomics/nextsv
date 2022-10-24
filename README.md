@@ -89,5 +89,17 @@ If you have any questions/suggestions, please feel free to post it on the [Issue
 
 ## Citation
 
-Fang L, Hu J, Wang D, Wang K. [NextSV: a meta-caller for structural variants from low-coverage long-read sequencing data](https://doi.org/10.1186/s12859-018-2207-1).  Bioinformatics (2018) 19:180. DOI: 10.1186/s12859-018-2207-1
+### NextSV
+Fang, L., Hu, J., Wang, D. et al. NextSV: a meta-caller for structural variants from low-coverage long-read sequencing data. BMC Bioinformatics 19, 180 (2018). https://doi.org/10.1186/s12859-018-2207-1
 
+### Minimap2
+Li, H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics, 34:3094-3100 (2018). https://doi.org/10.1093/bioinformatics/bty191
+
+### Sniffles
+Sedlazeck, F.J., Rescheneder, P., Smolka, M. et al. Accurate detection of complex structural variations using single-molecule sequencing. Nat Methods 15, 461–468 (2018). https://doi.org/10.1038/s41592-018-0001-7
+
+### CuteSV
+Jiang, T., Liu, Y., Jiang, Y. et al. Long-read-based human genomic structural variation detection with cuteSV. Genome Biol 21, 189 (2020). https://doi.org/10.1186/s13059-020-02107-y
+
+### Samtools
+Petr Danecek, James K Bonfield, Jennifer Liddle, John Marshall, Valeriu Ohan, Martin O Pollard, Andrew Whitwham, Thomas Keane, Shane A McCarthy, Robert M Davies, Heng Li, Twelve years of SAMtools and BCFtools, GigaScience, Volume 10, Issue 2, February 2021, giab008, https://doi.org/10.1093/gigascience/giab008
