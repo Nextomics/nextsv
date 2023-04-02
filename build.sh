@@ -1,8 +1,4 @@
 #!/bin/bash
-cd longreadqc
-sh build.sh
-cp longreadqc ../bin/
-cd ../pigz
-make
-cp pigz ../bin/
-cp unpigz ../bin/
+cd longreadqc && make && cp longreadqc ../bin/ && make clean 
+cd ..
+cd pigz && make && cp pigz ../bin/ && cp unpigz ../bin/ && make clean 
