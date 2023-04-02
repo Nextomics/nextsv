@@ -6,7 +6,7 @@ NextSV3 uses Minimap2 to do read mapping and uses two state-of-the-art SV caller
 
 ### Prerequisites
 
-- Python 3.8
+- Python 3.8 or later
 - [samtools](https://github.com/samtools/samtools) (v1.9 or later)
 - [minimap2](https://github.com/lh3/minimap2) (v2.22 or later)
 - [sniffles](https://github.com/fritzsedlazeck/Sniffles) (v2.0.7 or later)
@@ -18,7 +18,9 @@ Conda environment is not required but we highly recommend you install the prereq
 ```
 conda create -n nextsv3 python=3.8
 conda activate nextsv3
-conda install -c bioconda sniffles=2.0.7 cutesv=2.0.1 samtools=1.16 minimap2=2.24
+pip install "setuptools<58.0"
+pip install sniffles
+pip install cuteSV
 ```
 
 ### Installation of NextSV3
