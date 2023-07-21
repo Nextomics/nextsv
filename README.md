@@ -25,9 +25,9 @@ pip install cuteSV
 
 ### Installation of NextSV3
 ```
-git clone --recursive   https://github.com/Nextomics/nextsv.git
+git clone https://github.com/Nextomics/nextsv.git
 cd nextsv/
-sh build.sh
+make
 ```
 
 ## Usage
