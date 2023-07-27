@@ -1,4 +1,5 @@
 bin/longreadqc
 bin/pigz
 bin/unpigz
-
+bin/minimap2
+bin/ngmlr
