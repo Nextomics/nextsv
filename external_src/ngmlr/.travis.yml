@@ -1,0 +1,28 @@
+language: cpp
+
+sudo: false
+dist: trusty
+
+cache:
+    apt: true
+
+addons:
+    apt:
+        packages:
+            - vim
+            - bedtools
+            - samtools
+
+compiler: g++
+
+before_script:
+    - mkdir build
+    - cd build
+    - cmake ..
+
+script:
+    - make && cd ..
+#    - bin/ngmlr*/ngmlr -h
+    - test/test_travis.sh
+
+
