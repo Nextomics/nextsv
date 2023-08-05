@@ -26,8 +26,9 @@ pip install cuteSV
 ### Installation of NextSV3
 
 ```
-git clone https://github.com/Nextomics/nextsv.git
-cd nextsv/
+wget -O nextsv-3.1.0.tar.gz https://github.com/Nextomics/nextsv/archive/refs/tags/v3.1.0.tar.gz
+tar xzf nextsv-3.1.0.tar.gz
+cd nextsv-3.1.0
 make
 ```
 
