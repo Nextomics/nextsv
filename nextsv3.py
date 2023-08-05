@@ -15,6 +15,9 @@ class Setting:
         self.root_dir                  = os.path.abspath(nextsv_root_dir)
         self.longreadqc                = os.path.join(self.root_dir, 'bin/longreadqc')
         self.pigz                      = os.path.join(self.root_dir, 'bin/pigz')
+        self.seqtk                     = os.path.join(self.root_dir, 'bin/seqtk')
+        self.minimap2                  = os.path.join(self.root_dir, 'bin/minimap2')
+        self.ngmlr                     = os.path.join(self.root_dir, 'bin/ngmlr')
         self.check_bam_and_remove_file = os.path.join(self.root_dir, 'bin/check_bam_and_remove_file.py')
 
         ## required arguments
@@ -23,20 +26,20 @@ class Setting:
         self.sample_name = None
         self.ref_fasta   = None
         self.platform    = None
+        self.aligners    = None
         
         ## optional arguments
         self.conda_env = ''
-        self.samtools  = 'samtools'
-        self.sniffles  = 'sniffles'
-        self.minimap2  = 'minimap2'
-        self.cuteSV    = 'cuteSV'
+        self.samtools  = ''
+        self.sniffles  = ''
+        self.cuteSV    = ''
         self.threads   = 4
 
         self.input_fastq_list = []
         self.input_fasta_list = []
         self.clean_input_fastq = None
-        self.clean_input_fasta = None
         
+        self.aligner_list = []
         ## shell scripts
         self.get_clean_reads_sh_file = None
 
@@ -47,6 +50,8 @@ class Setting:
 
     def clean_input_prefix(self):
         return os.path.join(self.clean_reads_dir, self.sample_name)
+    def aligned_sam_file(self, aligner_name):
+        return os.path.join(self.bam_dir, f'{self.sample_name}.{aligner_name}.sam')
     def aligned_bam_file(self, aligner_name):
         return os.path.join(self.bam_dir, f'{self.sample_name}.{aligner_name}.bam')
     def sorted_bam_file(self, aligner_name):
@@ -54,7 +59,7 @@ class Setting:
     def aligner_shell_file(self, aligner_name):
         return os.path.join(self.bam_dir, f'run_{aligner_name}.{self.sample_name}.sh')
     def sv_detection_shell_file(self, aligner_name, svcaller_name):
-        return os.path.join(self.sv_calls_dir, f'run_{svcaller_name}_for{aligner_name}.{self.sample_name}.sh')
+        return os.path.join(self.sv_calls_dir, f'run_{svcaller_name}_for_{aligner_name}.{self.sample_name}.sh')
     def sv_vcf_file(self, aligner_name, svcaller_name):
         return os.path.join(self.sv_calls_dir, f'{self.sample_name}.{aligner_name}.{svcaller_name}.vcf')
     
@@ -69,27 +74,40 @@ def main():
     parser.add_argument('-s', '--sample_name', required = True, metavar = 'sample_name',         type = str, help = '(required) a unique name or id for the input sample')
     parser.add_argument('-r', '--ref_fasta',   required = True, metavar = 'ref.fasta',           type = str, help = '(required) path to reference genome sequence in FASTA format')
     parser.add_argument('-p', '--platform',    required = True, metavar = 'sequencing_platform', type = str, help = '(required) sequencing platform. Three valid values: ont/clr/hifi ont: oxford nanopore; clr: PacBio CLR; hifi: PacBio HiFi/CCS')
-
+    
     # optional
+    parser.add_argument('-a', '--aligners',    required = True, metavar = 'aligners_to_use', type = str, default = 'minimap2', help = '(optional) which aligner(s) to use. Three valid values: minimap2, ngmlr, minimap2+ngmlr (default: minimap2)')
+    
     parser.add_argument('-t', '--threads',     required = False, metavar = 'INT',   type = int, default = 4,  help = '(optional) number of threads (default: 4)')
     parser.add_argument('-e', '--conda_env',   required = False, metavar = 'conda_env',  type = str, default = '', help = '(optional) conda environment name (default: NULL)')
 
     parser.add_argument('--samtools', required = False, metavar = 'path/to/samtools',  type = str, default = 'samtools', help = '(optional) path to samtools (default: using environment default)')
-    parser.add_argument('--minimap2', required = False, metavar = 'path/to/minimap2',  type = str, default = 'minimap2', help = '(optional) path to minimap2 (default: using environment default)')
     parser.add_argument('--sniffles', required = False, metavar = 'path/to/sniffles',  type = str, default = 'sniffles', help = '(optional) path to sniffles (default: using environment default)')
     parser.add_argument('--cuteSV', required = False, metavar = 'path/to/cuteSV',  type = str, default = 'cuteSV', help = '(optional) path to cuteSV (default: using environment default)')
+    parser.add_argument('--minimap2', required = False, metavar = 'path/to/minimap2',  type = str, default = '', help = 'this parameter is deprecated as minimap2 is supplied in NextSV now')
   
     ### Version
-    parser.add_argument('-v', '--version', action='version', version= f'nextsv 3.1.0')
+    parser.add_argument('-v', '--version', action='version', version= f'nextsv 3.2.0')
  
     if len(sys.argv) < 2 or sys.argv[1] in ['help', 'h', '-help', 'usage']:
         input_args = parser.parse_args(['--help'])
     else:
         input_args = parser.parse_args()
 
+    myprint(f'Input arguments are: {sys.argv}\n')
     generate_scripts(input_args)
 
     return
+
+def generate_aligner_list(settings:Setting):
+    
+    valid_aligners = ['minimap2', 'ngmlr']
+    settings.aligner_list = settings.aligners.split('+')
+    for aligner in settings.aligner_list:
+        if aligner not in valid_aligners:
+            myprint(f'ERROR! unknown aligners: {settings.aligners}. Three valid values: minimap2, ngmlr, minimap2+ngmlr')
+            sys.exit(1)
+
 
 def generate_scripts(input_args):
 
@@ -104,10 +122,10 @@ def generate_scripts(input_args):
     settings.platform             = input_args.platform.lower()
     settings.conda_env            = input_args.conda_env
     settings.samtools             = input_args.samtools
-    settings.minimap2             = input_args.minimap2
     settings.sniffles             = input_args.sniffles
     settings.cuteSV               = input_args.cuteSV
     settings.threads              = input_args.threads
+    settings.aligners             = input_args.aligners.strip()
 
     settings.clean_reads_dir      = os.path.join(settings.out_dir, '1_clean_reads')
     settings.bam_dir              = os.path.join(settings.out_dir, '2_aligned_bam')
@@ -118,6 +136,9 @@ def generate_scripts(input_args):
         myprint(f'--platform should be one of the following: ont, hifi, clr (not case sensitive)')
         sys.exit(1)
 
+    generate_aligner_list(settings)
+    
+    myprint('NOTICE: checking external tools')
     get_full_path_of_tools(settings)
 
     myprint('NOTICE: making output directories')
@@ -130,13 +151,23 @@ def generate_scripts(input_args):
 
     list_input_files(settings)
     clean_input_files(settings)
+    print('###### Output information ######')
     myprint(f'NOTICE: clean reads will be here: {settings.clean_reads_dir}')
 
-    minimap2_align(settings)
+    if 'minimap2' in settings.aligner_list:
+        minimap2_align(settings)
+    if 'ngmlr' in settings.aligner_list:
+        ngmlr_align(settings)
+        
     myprint(f'NOTICE: aligned bam files will be here: {settings.bam_dir}')
 
-    sniffles_detection(settings, 'minimap2')
-    cuteSV_detection(settings, 'minimap2')
+    if 'minimap2' in settings.aligner_list:
+        sniffles_detection(settings, 'minimap2')
+        cuteSV_detection(settings, 'minimap2')
+    if 'ngmlr' in settings.aligner_list:
+        sniffles_detection(settings, 'ngmlr')
+        cuteSV_detection(settings, 'ngmlr')
+    
     myprint(f'NOTICE: SV calls will be here: {settings.sv_calls_dir}')
 
     work_sh_file = os.path.join(settings.out_dir, 'work.sh')
@@ -148,68 +179,87 @@ def generate_scripts(input_args):
 
     work_sh_f.write(f'sh {settings.get_clean_reads_sh_file}\n\n')
 
-    aligner_shell_file = settings.aligner_shell_file('minimap2')
-    work_sh_f.write(f'sh {aligner_shell_file}\n\n')
-    
-    sv_detection_shell_file = settings.sv_detection_shell_file('minimap2', 'sniffles')
-    work_sh_f.write(f'sh {sv_detection_shell_file}\n\n')
+    for aligner in settings.aligner_list:
+        aligner_shell_file = settings.aligner_shell_file(aligner)
+        work_sh_f.write(f'sh {aligner_shell_file}\n\n')
 
-    sv_detection_shell_file = settings.sv_detection_shell_file('minimap2', 'cuteSV')
-    work_sh_f.write(f'sh {sv_detection_shell_file}\n\n')
+        for sv_caller in ['sniffles', 'cuteSV']:
+            sv_detection_shell_file = settings.sv_detection_shell_file(aligner, sv_caller)
+            work_sh_f.write(f'sh {sv_detection_shell_file}\n\n')
     
     work_sh_f.close()
-
-    myprint(f'NOTICE: Please run the following shell script: {work_sh_file}')
+    
+    print('\n################################')
+    myprint(f'NOTICE: Please run the following shell script: {work_sh_file}\n\n')
 
     return
 
 def get_full_path_of_tools(settings:Setting):
 
+    tool_name = settings.minimap2
+    if os.path.exists(tool_name) == False or os.path.isfile(tool_name) == False:
+        report_tool_not_found_check_installation(tool_name)
+        sys.exit(1)
+        
+    myprint(f'NOTICE: minimap2 is here: {settings.minimap2}')
+    
+    tool_name = settings.ngmlr
+    if os.path.exists(tool_name) == False or os.path.isfile(tool_name) == False:
+        report_tool_not_found_check_installation(tool_name)
+        sys.exit(1)
+
+    myprint(f'NOTICE: ngmlr is here: {settings.ngmlr}')
+    
     if settings.samtools == 'samtools':
         tool_name = 'samtools'
         result = subprocess.run(['which', tool_name], stdout=subprocess.PIPE)
         if result.returncode == 0:
-            myprint(f'NOTICE: path to {tool_name}: {result.stdout.decode().strip()}')
             settings.samtools = result.stdout.decode().strip()
         else:
-            report_tool_not_found(tool_name)
+            report_tool_not_found_in_env(tool_name)
             sys.exit(1)
-        
-    if settings.minimap2 == 'minimap2':
-        tool_name = 'minimap2'
-        result = subprocess.run(['which', tool_name], stdout=subprocess.PIPE)
-        if result.returncode == 0:
-            myprint(f'NOTICE: path to {tool_name}: {result.stdout.decode().strip()}')
-            settings.minimap2 = result.stdout.decode().strip()
-        else:
-            report_tool_not_found(tool_name)
-            sys.exit(1)
-        
+    else:
+        settings.samtools = os.path.abspath(settings.samtools)
+    
+    myprint(f'NOTICE: samtools is here: {settings.samtools}')
+    
     if settings.sniffles == 'sniffles':
         tool_name = 'sniffles'
         result = subprocess.run(['which', tool_name], stdout=subprocess.PIPE)
         if result.returncode == 0:
-            myprint(f'NOTICE: path to {tool_name}: {result.stdout.decode().strip()}')
             settings.sniffles = result.stdout.decode().strip()
         else:
-            report_tool_not_found(tool_name)
+            report_tool_not_found_in_env(tool_name)
             sys.exit(1)
+    else:
+        settings.sniffles = os.path.abspath(settings.sniffles)
 
+    myprint(f'NOTICE: sniffles is here: {settings.sniffles}')
+    
     if settings.cuteSV == 'cuteSV':
         tool_name = 'cuteSV'
         result = subprocess.run(['which', tool_name], stdout=subprocess.PIPE)
         if result.returncode == 0:
-            myprint(f'NOTICE: path to {tool_name}: {result.stdout.decode().strip()}')
             settings.cuteSV = result.stdout.decode().strip()
         else:
-            report_tool_not_found(tool_name)
+            report_tool_not_found_in_env(tool_name)
             sys.exit(1)
+    else:
+        settings.cuteSV = os.path.abspath(settings.cuteSV)
+    
+    myprint(f'NOTICE: cuteSV is here: {settings.cuteSV}')
+    
+    
     return
 
-def report_tool_not_found(tool_name):
+def report_tool_not_found_in_env(tool_name):
 
     myprint(f'ERROR: {tool_name} is not found in the environment! Please check if you have activated the conda environment. If the error still exists, please supply --{tool_name} with the full path')
 
+    return
+
+def report_tool_not_found_check_installation(tool_name):
+    myprint(f'ERROR: {tool_name} is not found! Please check if your installation is correct.')
     return
 
 def list_input_files(settings:Setting):
@@ -250,37 +300,42 @@ def clean_input_files(settings:Setting):
     settings.get_clean_reads_sh_file = os.path.join(settings.clean_reads_dir, 'get_clean_reads.sh')
     cmd  = '#!/bin/bash\n\n'
 
-    # clean FASTQ
-    if len(settings.input_fastq_list) > 0:
-        input_fastq_list_file = os.path.join(settings.clean_reads_dir, 'raw_input_fastq.list')
-        input_fastq_list_f    = open(input_fastq_list_file, 'w')
-        for fastq in settings.input_fastq_list:
-            input_fastq_list_f.write(f'{fastq}\n')
-        input_fastq_list_f.close()
-
-        settings.clean_input_fastq = settings.clean_input_prefix() + '.clean.fastq'
-
-        cmd += f'{settings.longreadqc} filterfq --input_list_file {input_fastq_list_file} -p {settings.clean_input_prefix()} -n 1 \n'
-        cmd += f'{settings.pigz} --processes {settings.threads} {settings.clean_input_fastq} \n'
-        settings.clean_input_fastq = settings.clean_input_fastq + '.gz'
-        cmd += f'{settings.longreadqc} fq -i {settings.clean_input_fastq} -d {settings.clean_reads_dir} -p {settings.sample_name} \n'
-
-    else:
-        settings.clean_input_fastq = ''
-    
-    cmd += '\n\n'
-    # copy FASTA directly as longreadqc doesn't support fasta for now
+    fake_fastq_list = []
+    fake_fastq_dir = None
+    # convert FASTA to FASTQ
     if len(settings.input_fasta_list) > 0:
-        settings.clean_input_fasta = settings.clean_input_prefix() + '.clean.fasta.gz'
-        cmd += f'rm -f {settings.clean_input_fasta}\n'
-        for file in settings.input_fasta_list:
-            if file[-6:].lower() == '.fasta' or file[-3:].lower() == '.fa':
-                cmd += f'cat {file}  | {settings.pigz} --processes {settings.threads} - >> {settings.clean_input_fasta} \n'
-            elif file[-9:].lower() == '.fasta.gz' or file[-6:].lower() == '.fa.gz':
-                cmd += f'zcat {file} | {settings.pigz} --processes {settings.threads} - >> {settings.clean_input_fasta} \n'
-    else:
-        settings.clean_input_fasta = ''
+        # convert fasta to fastq as NGMLR has bugs for input fasta files
+        fake_fastq_dir = os.path.join(settings.clean_reads_dir, 'FA_to_FQ')
+        cmd += f'rm -rf {fake_fastq_dir}\n\n'
+        cmd += f'mkdir -p {fake_fastq_dir}\n\n'
+        for fa_file in settings.input_fasta_list:
+            fa_filename = os.path.split(fa_file)[1]
+            fake_fastq = os.path.join(fake_fastq_dir, f'{fa_filename}.converted.fastq.gz')
+            cmd += f'{settings.seqtk} seq -F . {fa_file} | {settings.pigz} - > {fake_fastq}\n\n'
+            fake_fastq_list.append(fake_fastq)
+
+    # clean FASTQ
+    input_fastq_list_file = os.path.join(settings.clean_reads_dir, 'raw_input_fastq.list')
+    input_fastq_list_f    = open(input_fastq_list_file, 'w')
+    for fastq in settings.input_fastq_list:
+        input_fastq_list_f.write(f'{fastq}\n')
+
+    for fastq in fake_fastq_list:
+        input_fastq_list_f.write(f'{fastq}\n')
+    input_fastq_list_f.close()
+
+    settings.clean_input_fastq = settings.clean_input_prefix() + '.clean.fastq'
+    cmd += f'rm -f {settings.clean_input_fastq}*\n\n'
+
+    cmd += f'{settings.longreadqc} filterfq --input_list_file {input_fastq_list_file} -p {settings.clean_input_prefix()} -n 1 \n\n'
+    cmd += f'{settings.pigz} --processes {settings.threads} {settings.clean_input_fastq}\n\n'
+    cmd += f'{settings.longreadqc} fq -i {settings.clean_input_fastq}.gz -d {settings.clean_reads_dir} -p {settings.sample_name}\n\n'
     
+    if fake_fastq_dir:
+        cmd += f'rm -rf {fake_fastq_dir}\n\n'
+
+    settings.clean_input_fastq = settings.clean_input_fastq + '.gz' # settings.clean_input_fastq will be used in other places
+
     get_clean_reads_sh_f = open(settings.get_clean_reads_sh_file, 'w')
     get_clean_reads_sh_f.write(cmd)
     get_clean_reads_sh_f.close()
@@ -330,6 +385,39 @@ def sniffles_detection(settings:Setting, aligner_name):
 
     return
 
+def ngmlr_align_for1input(settings:Setting, input_file, aligned_sam_file, sorted_bam_file):
+    
+    if settings.platform == 'ont':
+        platform_arguments = ' -x ont '
+    elif settings.platform == 'hifi' or 'cls':
+        platform_arguments = ' -x pacbio '
+    else:
+        myprint(f'ERROR: unknown platform: {settings.platform}')
+        sys.exit(1)
+        
+    cmd = f'{settings.ngmlr} -t {settings.threads} -r {settings.ref_fasta} -q {input_file} {platform_arguments} -o {aligned_sam_file}\n\n'
+    cmd += f'{settings.samtools} sort -@ {settings.threads} -o {sorted_bam_file} {aligned_sam_file}\n\n'
+    cmd += f'{settings.samtools} index -@ {settings.threads} {sorted_bam_file}\n\n'
+    cmd += f'{settings.check_bam_and_remove_file} {sorted_bam_file} {aligned_sam_file} {settings.samtools}\n\n'
+    
+    return cmd
+
+def ngmlr_align(settings:Setting):
+    
+    aligner_name = 'ngmlr'
+    aligned_sam_file   = settings.aligned_sam_file(aligner_name)
+    sorted_bam_file    = settings.sorted_bam_file(aligner_name)
+    aligner_shell_file = settings.aligner_shell_file(aligner_name)
+        
+    cmd = '#!/bin/bash\n\n'
+    
+    cmd += ngmlr_align_for1input(settings, settings.clean_input_fastq, aligned_sam_file, sorted_bam_file)
+
+    sh_fp = open(aligner_shell_file, 'w')
+    sh_fp.write(cmd)
+    sh_fp.close()
+    
+    return
 
 
 def minimap2_align(settings:Setting):
@@ -350,10 +438,10 @@ def minimap2_align(settings:Setting):
         sys.exit(1)
     
     cmd = '#!/bin/bash\n\n'
-    cmd += f'{settings.minimap2} --MD -t {settings.threads} -a {platform_arguments} -N 10 {settings.ref_fasta} {settings.clean_input_fastq} {settings.clean_input_fasta} | {settings.samtools} view -@ 2 -bS - > {aligned_bam_file} \n'
-    cmd += f'{settings.samtools} sort -@ {settings.threads} -o {sorted_bam_file} {aligned_bam_file} \n'
-    cmd += f'{settings.samtools} index -@ {settings.threads} {sorted_bam_file} \n'
-    cmd += f'{settings.check_bam_and_remove_file} {sorted_bam_file} {aligned_bam_file} {settings.samtools}\n'
+    cmd += f'{settings.minimap2} --MD -t {settings.threads} -a {platform_arguments} -N 10 {settings.ref_fasta} {settings.clean_input_fastq} | {settings.samtools} view -@ 2 -bS - > {aligned_bam_file}\n\n'
+    cmd += f'{settings.samtools} sort -@ {settings.threads} -o {sorted_bam_file} {aligned_bam_file}\n\n'
+    cmd += f'{settings.samtools} index -@ {settings.threads} {sorted_bam_file} \n\n'
+    cmd += f'{settings.check_bam_and_remove_file} {sorted_bam_file} {aligned_bam_file} {settings.samtools}\n\n'
 
     sh_fp = open(aligner_shell_file, 'w')
     sh_fp.write(cmd)

@@ -1,4 +1,4 @@
-all: longreadqc pigz minimap2 ngmlr
+all: longreadqc pigz minimap2 ngmlr seqtk
 
 longreadqc:
 	cd external_src/longreadqc && make && cp longreadqc ../../bin/ && make clean
@@ -11,3 +11,6 @@ minimap2:
 
 ngmlr:
 	cd external_src/ngmlr/ && mkdir -p build && cd build && cmake .. && make && cp ../bin/ngmlr-0.2.8/ngmlr ../../../bin/ && cd ..  && rm -r build bin
+
+seqtk:
+	cd external_src/seqtk/ && make && mv seqtk ../../bin/
