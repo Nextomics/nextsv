@@ -32,6 +32,14 @@ cd nextsv-3.1.0
 make
 ```
 
+If you are in China, you can download NextSV from the following mirror with much better speed:
+```
+git clone https://e.coding.net/fanglab/LongReads/nextsv.git
+cd nextsv
+make
+```
+
+
 ## Usage
 
 ### Quick Example
