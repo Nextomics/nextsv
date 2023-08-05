@@ -87,7 +87,7 @@ def main():
     parser.add_argument('--minimap2', required = False, metavar = 'path/to/minimap2',  type = str, default = '', help = 'this parameter is deprecated as minimap2 is supplied in NextSV now')
   
     ### Version
-    parser.add_argument('-v', '--version', action='version', version= f'nextsv 3.2.0')
+    parser.add_argument('-v', '--version', action='version', version= f'nextsv 3.1.0')
  
     if len(sys.argv) < 2 or sys.argv[1] in ['help', 'h', '-help', 'usage']:
         input_args = parser.parse_args(['--help'])
