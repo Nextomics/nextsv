@@ -10,8 +10,7 @@ NextSV3 uses Minimap2/NGMLR to do read mapping and uses two state-of-the-art SV 
 - [samtools](https://github.com/samtools/samtools) (v1.9 or later)
 - [sniffles](https://github.com/fritzsedlazeck/Sniffles) (v2.0.7 or later)
 - [cuteSV](https://github.com/tjiangHIT/cuteSV) (v2.0.1 or later)
-- [GCC](https://gcc.gnu.org/) (v4.8.2 or later)
-- [cmake](https://cmake.org/download/) (v2.8 or later)
+
 
 Conda environment is not required but we highly recommend you install the prerequisites in a new conda environment to avoid potential dependency issues. 
 
@@ -25,14 +24,24 @@ pip install cuteSV
 
 ### Installation of NextSV3
 
+You can acquire precompiled binaries from the [release page](https://github.com/Nextomics/nextsv/releases) with:
 ```
-wget -O nextsv-3.1.0.tar.gz https://github.com/Nextomics/nextsv/archive/refs/tags/v3.1.0.tar.gz
-tar xzf nextsv-3.1.0.tar.gz
-cd nextsv-3.1.0
+wget https://github.com/Nextomics/nextsv/releases/download/v3.1.0/NextSV-3.1.0-linux-x86_64.tar.gz
+tar xzf NextSV-3.1.0-linux-x86_64.tar.gz
+```
+If you want to compile from the source code, you need to have the following tools/libraries installed:
+- GCC (v4.8.2 or later)
+- GNU make
+- CMake
+- zlib development files 
+
+```
+git clone https://github.com/Nextomics/nextsv.git
+cd nextsv
 make
 ```
 
-If you are in China, you can download NextSV from the following mirror with much better speed:
+If you are in China, you can clone NextSV from the following mirror with much better speed:
 ```
 git clone https://e.coding.net/fanglab/LongReads/nextsv.git
 cd nextsv
