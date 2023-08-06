@@ -5,7 +5,7 @@ NextSV3 uses Minimap2/NGMLR to do read mapping and uses two state-of-the-art SV 
 ## Installation
 
 ### Prerequisites
-
+- Operating System: Linux/MacOS
 - Python 3.8 or later
 - [samtools](https://github.com/samtools/samtools) (v1.9 or later)
 - [sniffles](https://github.com/fritzsedlazeck/Sniffles) (v2.0.7 or later)
@@ -24,7 +24,7 @@ pip install cuteSV
 
 ### Installation of NextSV3
 
-You can acquire precompiled binaries from the [release page](https://github.com/Nextomics/nextsv/releases) with:
+If your OS is Linux, you can acquire precompiled binaries from the [release page](https://github.com/Nextomics/nextsv/releases) with:
 ```
 wget https://github.com/Nextomics/nextsv/releases/download/v3.1.0/NextSV-3.1.0-linux-x86_64.tar.gz
 tar xzf NextSV-3.1.0-linux-x86_64.tar.gz
