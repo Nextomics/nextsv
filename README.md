@@ -2,9 +2,22 @@
 
 NextSV3 uses [Minimap2](https://github.com/lh3/minimap2)/[Winnowmap](https://github.com/marbl/Winnowmap)/[NGMLR](https://github.com/philres/ngmlr) to do read mapping and uses two state-of-the-art SV callers ([Sniffles2](https://github.com/fritzsedlazeck/Sniffles) and [cuteSV2](https://github.com/tjiangHIT/cuteSV)) to do SV calling.
 
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Aligners](#aligners)
+  - [Quick Example](#quick-example)
+  - [Output files](#output-files)
+  - [Full Usage](#full-usage)
+- [Contact](#contact)
+- [Citation](#citation)
+- [Included tools](#open-source-software-tools-included-in-this-repository)
+
 ## Installation
 
-### Prerequisites
+**Prerequisites**
 - Operating System: Linux/MacOS
 - Python 3.8 or later
 - [samtools](https://github.com/samtools/samtools) (v1.9 or later)
@@ -21,7 +34,7 @@ pip install sniffles
 pip install cuteSV
 ```
 
-### Installation of NextSV3
+**Installation of NextSV3**
 
 If your OS is Linux, you can acquire precompiled binaries from the [release page](https://github.com/Nextomics/nextsv/releases) with:
 
@@ -97,6 +110,9 @@ python path/to/nextsv3.py -a minimap2+winnowmap+ngmlr -i path/to/fastq/folder/ -
 
 Memory consumption of the pipeline depends on number of threads and the size of the reference genome. For human genomes (3Gb), we recommend 4GB memory per thread. 
 
+### Output files
+
+NextSV will generate a `work.sh` in the output directory. Run this `work.sh` and you will get output files. SV calls of sniffles and cuteSV will be generated in the `out_dir/3_SV_calls` folder.
 
 ### Full Usage
 ```
@@ -138,9 +154,6 @@ options:
 
 ```
 
-## Output files
-
-SV calls of sniffles and cuteSV will be generated in the `out_dir/3_SV_calls` folder.
 
 ## Contact
 
@@ -174,23 +187,21 @@ Petr Danecek, James K Bonfield, Jennifer Liddle, John Marshall, Valeriu Ohan, Ma
 
 ## Open source software tools included in this repository
 
-To provide consistent output and better user experience, we included some open source software tools that are under the MIT License. 
+To provide consistent output and better user experience, we included some open source software tools. 
 
-### LongReadQC
-https://github.com/fangli80/longreadqc
+**LongReadQC** https://github.com/fangli80/longreadqc
 
-### Seqtk
+**Seqtk**
 https://github.com/lh3/seqtk
 
-### Minimap2
+**Minimap2**
 https://github.com/lh3/minimap2
 
-### NGMLR
+**NGMLR**
 https://github.com/philres/ngmlr
 
-### Winnowmap
-https://github.com/marbl/Winnowmap
-
-### pigz
+**pigz**
 https://github.com/madler/pigz
 
+**Winnowmap**
+https://github.com/marbl/Winnowmap
