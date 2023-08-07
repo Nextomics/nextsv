@@ -156,14 +156,17 @@ Li, H. Minimap2: pairwise alignment for nucleotide sequences. Bioinformatics, 34
 
 ### Winnowmap
 Jain, C., Rhie, A., Hansen, N.F., Koren, S., and Phillippy, A.M. (2022). Long-read mapping to repetitive reference sequences using Winnowmap2. Nat Methods 19, 705-710. https://doi.org/10.1038/s41592-022-01457-8
+
 Jain, C., Rhie, A., Zhang, H., Chu, C., Walenz, B.P., Koren, S., and Phillippy, A.M. (2020). Weighted minimizer sampling improves long read mapping. Bioinformatics 36, i111-i118. https://doi.org/10.1093/bioinformatics/btaa435
 
 ### NGMLR and Sniffles
 Sedlazeck, F.J., Rescheneder, P., Smolka, M. et al. Accurate detection of complex structural variations using single-molecule sequencing. Nat Methods 15, 461–468 (2018). https://doi.org/10.1038/s41592-018-0001-7
+
 Smolka, M., Paulin, L.F., Grochowski, C.M., Mahmoud, M., Behera, S., Gandhi, M., Hong, K., Pehlivan, D., Scholz, S.W., Carvalho, C.M.B., et al. (2022). Comprehensive Structural Variant Detection: From Mosaic to Population-Level. bioRxiv. https://doi.org/10.1101/2022.04.04.487055 
 
 ### CuteSV
 Jiang, T., Liu, Y., Jiang, Y. et al. Long-read-based human genomic structural variation detection with cuteSV. Genome Biol 21, 189 (2020). https://doi.org/10.1186/s13059-020-02107-y
+
 Cao, S., Jiang, T., Liu, Y., Liu, S., and Wang, Y. (2022). Re-genotyping structural variants through an accurate force-calling method. bioRxiv. https://doi.org/10.1101/2022.04.04.487055 
 
 ### Samtools
