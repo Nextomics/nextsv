@@ -18,6 +18,8 @@ class Setting:
         self.seqtk                     = os.path.join(self.root_dir, 'bin/seqtk')
         self.minimap2                  = os.path.join(self.root_dir, 'bin/minimap2')
         self.ngmlr                     = os.path.join(self.root_dir, 'bin/ngmlr')
+        self.meryl                     = os.path.join(self.root_dir, 'bin/meryl')
+        self.winnowmap                 = os.path.join(self.root_dir, 'bin/winnowmap')
         self.check_bam_and_remove_file = os.path.join(self.root_dir, 'bin/check_bam_and_remove_file.py')
 
         ## required arguments
@@ -76,7 +78,7 @@ def main():
     parser.add_argument('-p', '--platform',    required = True, metavar = 'sequencing_platform', type = str, help = '(required) sequencing platform. Three valid values: ont/clr/hifi ont: oxford nanopore; clr: PacBio CLR; hifi: PacBio HiFi/CCS')
     
     # optional
-    parser.add_argument('-a', '--aligners',    required = True, metavar = 'aligners_to_use', type = str, default = 'minimap2', help = '(optional) which aligner(s) to use. Three valid values: minimap2, ngmlr, minimap2+ngmlr (default: minimap2)')
+    parser.add_argument('-a', '--aligners',    required = True, metavar = 'aligners_to_use', type = str, default = 'minimap2', help = '(optional) which aligner(s) to use. Three supported aligners: minimap2, ngmlr, winnowmap. Use "+" to combine multiple aligners. Examples: minimap2+ngmlr, winnowmap+minimap2, minimap2+ngmlr+winnowmap, minimap2, ngmlr, winnowmap')
     
     parser.add_argument('-t', '--threads',     required = False, metavar = 'INT',   type = int, default = 4,  help = '(optional) number of threads (default: 4)')
     parser.add_argument('-e', '--conda_env',   required = False, metavar = 'conda_env',  type = str, default = '', help = '(optional) conda environment name (default: NULL)')
@@ -87,7 +89,7 @@ def main():
     parser.add_argument('--minimap2', required = False, metavar = 'path/to/minimap2',  type = str, default = '', help = 'this parameter is deprecated as minimap2 is supplied in NextSV now')
   
     ### Version
-    parser.add_argument('-v', '--version', action='version', version= f'nextsv 3.1.0')
+    parser.add_argument('-v', '--version', action='version', version= f'NextSV-3.1.0')
  
     if len(sys.argv) < 2 or sys.argv[1] in ['help', 'h', '-help', 'usage']:
         input_args = parser.parse_args(['--help'])
@@ -101,14 +103,15 @@ def main():
 
 def generate_aligner_list(settings:Setting):
     
-    valid_aligners = ['minimap2', 'ngmlr']
+    valid_aligners = ['minimap2', 'ngmlr', 'winnowmap']
     settings.aligner_list = settings.aligners.split('+')
     for aligner in settings.aligner_list:
         if aligner not in valid_aligners:
-            myprint(f'ERROR! unknown aligners: {settings.aligners}. Three valid values: minimap2, ngmlr, minimap2+ngmlr')
+            myprint(f'ERROR! unknown aligners: {settings.aligners}. Supported aligners: minimap2, ngmlr, winnowmap')
             sys.exit(1)
 
 
+    
 def generate_scripts(input_args):
 
     nextsv3 = os.path.abspath(__file__)
@@ -158,15 +161,14 @@ def generate_scripts(input_args):
         minimap2_align(settings)
     if 'ngmlr' in settings.aligner_list:
         ngmlr_align(settings)
+    if 'winnowmap' in settings.aligner_list:
+        winnowmap_align(settings)
         
     myprint(f'NOTICE: aligned bam files will be here: {settings.bam_dir}')
 
-    if 'minimap2' in settings.aligner_list:
-        sniffles_detection(settings, 'minimap2')
-        cuteSV_detection(settings, 'minimap2')
-    if 'ngmlr' in settings.aligner_list:
-        sniffles_detection(settings, 'ngmlr')
-        cuteSV_detection(settings, 'ngmlr')
+    for aligner in settings.aligner_list:
+        sniffles_detection(settings, aligner)
+        cuteSV_detection(settings, aligner)
     
     myprint(f'NOTICE: SV calls will be here: {settings.sv_calls_dir}')
 
@@ -449,6 +451,50 @@ def minimap2_align(settings:Setting):
 
     return
 
+def winnowmap_align(settings:Setting):
+    
+    aligner_name = 'winnowmap'
+    aligned_bam_file   = settings.aligned_bam_file(aligner_name)
+    sorted_bam_file    = settings.sorted_bam_file(aligner_name)
+    aligner_shell_file = settings.aligner_shell_file(aligner_name)
+
+    if settings.platform == 'ont':
+        platform_arguments = '-x map-ont'
+    elif settings.platform == 'hifi':
+        platform_arguments = '-x map-pb'
+    elif settings.platform == 'clr':
+        platform_arguments = '-x map-pb-clr'
+    else:
+        myprint(f'ERROR: unknown platform: {settings.platform}')
+        sys.exit(1)
+    
+    ref_dir             = os.path.split(settings.ref_fasta)[0]
+    merylDB_dir         = os.path.join(settings.ref_fasta, '.merylDB') 
+    repetitive_k15_file = os.path.join(settings.ref_fasta, '.repetitive_k15.txt')
+    
+    repetitive_k15_file_is_valid = False
+    if os.path.exists(repetitive_k15_file) and os.path.getsize(repetitive_k15_file) > 0:
+        repetitive_k15_file_is_valid = True
+        
+    if repetitive_k15_file_is_valid == False and os.access(ref_dir, os.W_OK) == False:
+        myprint(f'ERROR! Failed to create a folder for storing meryl output, which is needed by winnowmap alignment. Please make sure you have written permission in the reference FASTA folder: \n{ref_dir}\nIf you are unable to get written permission in this folder, you can create a new reference FASTA folder in your own space, soft link the FASTA files inside the new folder, and supply NextSV with the path to the new FASTA folder.')
+        sys.exit(1)
+    
+    cmd = '#!/bin/bash\n\n'
+    if repetitive_k15_file_is_valid == False:
+        cmd += f'{settings.meryl} count k=15 output {merylDB_dir} {settings.ref_fasta}\n\n'
+        cmd += f'{settings.meryl} print greater-than distinct=0.9998 {merylDB_dir} > {repetitive_k15_file}\n\n'
+    
+    cmd += f'{settings.winnowmap} --MD -t {settings.threads} -a {platform_arguments} {settings.ref_fasta} {settings.clean_input_fastq} | {settings.samtools} view -@ 2 -bS - > {aligned_bam_file}\n\n'
+    cmd += f'{settings.samtools} sort -@ {settings.threads} -o {sorted_bam_file} {aligned_bam_file}\n\n'
+    cmd += f'{settings.samtools} index -@ {settings.threads} {sorted_bam_file} \n\n'
+    cmd += f'{settings.check_bam_and_remove_file} {sorted_bam_file} {aligned_bam_file} {settings.samtools}\n\n'
+
+    sh_fp = open(aligner_shell_file, 'w')
+    sh_fp.write(cmd)
+    sh_fp.close()
+
+    return
 
 def myprint(string):
     print ('[' + datetime.now().strftime(TimeFormat) + '] ' + string )

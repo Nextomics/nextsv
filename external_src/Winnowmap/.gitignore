@@ -1,0 +1,7 @@
+.cproject
+.project
+.*.swp
+*.a
+*.o
+*.dSYM
+bin

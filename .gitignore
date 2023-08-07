@@ -4,3 +4,9 @@ bin/unpigz
 bin/minimap2
 bin/ngmlr
 bin/seqtk
+bin/meryl
+bin/meryl-analyze
+bin/meryl-import
+bin/meryl-lookup
+bin/meryl-simple
+bin/winnowmap
