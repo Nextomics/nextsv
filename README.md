@@ -18,7 +18,7 @@ NextSV3 uses [Minimap2](https://github.com/lh3/minimap2)/[Winnowmap](https://git
 ## Installation
 
 **Prerequisites**
-- Operating System: Linux/MacOS
+- Operating System: Linux
 - Python 3.8 or later
 - [samtools](https://github.com/samtools/samtools) (v1.9 or later)
 - [sniffles](https://github.com/fritzsedlazeck/Sniffles) (v2.0.7 or later)
