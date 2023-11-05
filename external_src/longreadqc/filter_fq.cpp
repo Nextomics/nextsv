@@ -56,11 +56,6 @@ static inline int is_bad_fastq (char **lines, int32_t min_read_len, int32_t max_
     if (seq_len < min_read_len ) { return 4; }
     if (seq_len > max_read_len ) { return 5; }
 
-    for (int i = 0; i < seq_len; i++)
-    {
-        if (is_letter[lines[1][i]] == 0)     { return 6; }
-        if (is_qual_value[lines[3][i]] == 0) { return 7; }
-    }
     return 0;
 }
 
@@ -192,7 +187,7 @@ static int filter_fastqs (STRING_LIST * input_file_list, const char * out_prefix
         {
             is_letter[i] = 1;
         }
-        if (i >= 33 && i <= 64 + 60 || i == '\n' )
+        if (i >= 33 && i <= 126 )
         {
             is_qual_value[i] = 1;
         }
