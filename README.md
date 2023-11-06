@@ -39,8 +39,8 @@ pip install cuteSV
 If your OS is Linux, you can acquire precompiled binaries from the [release page](https://github.com/Nextomics/nextsv/releases) with:
 
 ```
-wget https://github.com/Nextomics/nextsv/releases/download/v3.1.0/NextSV-3.1.0-linux-x86_64.tar.gz
-tar xzf NextSV-3.1.0-linux-x86_64.tar.gz
+wget https://github.com/Nextomics/nextsv/releases/download/v3.2.0/NextSV-3.2.0-linux-x86_64.tar.gz
+tar xzf NextSV-3.2.0-linux-x86_64.tar.gz
 ```
 
 If you want to compile from the source code, you need to have the following tools/libraries installed:
@@ -49,19 +49,14 @@ If you want to compile from the source code, you need to have the following tool
 - CMake
 - zlib development files 
 
+**You may encounter problems during the compilation process if your operating system is missing any of the above tools/libraries,  and we strongly recommend using our pre-compiled binaries if your operating system is Linux.**
+
+To compile NextSV from source: 
 ```
 git clone https://github.com/Nextomics/nextsv.git
 cd nextsv
 make
 ```
-
-If you are in China, you can clone NextSV from the following mirror with much better speed:
-```
-git clone https://e.coding.net/fanglab/LongReads/nextsv.git
-cd nextsv
-make
-```
-
 
 ## Usage
 
