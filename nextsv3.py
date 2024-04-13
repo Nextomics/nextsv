@@ -121,7 +121,7 @@ def generate_scripts(input_args):
     settings.in_dir               = os.path.abspath(input_args.in_dir)
     settings.out_dir              = os.path.abspath(input_args.out_dir)
     settings.sample_name          = input_args.sample_name
-    settings.ref_fasta            = input_args.ref_fasta
+    settings.ref_fasta            = os.path.abspath(input_args.ref_fasta)
     settings.platform             = input_args.platform.lower()
     settings.conda_env            = input_args.conda_env
     settings.samtools             = input_args.samtools
